@@ -1,6 +1,16 @@
-﻿namespace NhaXinh.Repositories.Interfaces
+﻿using NhaXinh.Models;
+
+namespace NhaXinh.Repositories.Interfaces
 {
-    public class IBannerRepository
+    public interface IBannerRepository
     {
+        Task<List<Banner>> GetAllAsync();
+        Task<List<Banner>> GetActiveAsync();
+
+        Task<Banner?> GetByIdAsync(int id);
+
+        Task AddAsync(Banner banner);
+        Task UpdateAsync(Banner banner);
+        Task DeleteAsync(int id);
     }
 }
