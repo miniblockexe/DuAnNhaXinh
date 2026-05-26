@@ -1,6 +1,15 @@
-﻿namespace NhaXinh.Services.Interfaces
+﻿using NhaXinh.Models;
+
+namespace NhaXinh.Services.Interfaces
 {
-    public class ICartService
+    public interface ICartService
     {
+        List<CartItem> GetCart();
+        void AddToCart(Product product, int quantity = 1);
+        void UpdateQuantity(int productId, int quantity);
+        void RemoveFromCart(int productId);
+        void ClearCart();
+        decimal GetTotalAmount();
+        int GetTotalItems();
     }
 }
