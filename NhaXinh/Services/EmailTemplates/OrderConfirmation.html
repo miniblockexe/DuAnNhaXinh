@@ -1,0 +1,29 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
+        <h2 style="color: #e67e22;">Cảm ơn bạn đã đặt hàng!</h2>
+        <p>Xin chào <strong>{{ReceiverName}}</strong>,</p>
+        <p>Đơn hàng của bạn đã được tiếp nhận và đang chờ xác nhận.</p>
+        <table style="width:100%; border-collapse:collapse;">
+            <tr>
+                <td style="padding:8px; border:1px solid #ddd;">Mã đơn hàng</td>
+                <td style="padding:8px; border:1px solid #ddd;"><strong>{{OrderCode}}</strong></td>
+            </tr>
+            <tr>
+                <td style="padding:8px; border:1px solid #ddd;">Tổng tiền</td>
+                <td style="padding:8px; border:1px solid #ddd;"><strong>{{TotalAmount}}</strong></td>
+            </tr>
+        </table>
+        <p style="margin-top:16px;">
+            Chúng tôi sẽ liên hệ với bạn sớm nhất để xác nhận đơn hàng.
+        </p>
+        <p style="color:#888; font-size:12px;">
+            Email này được gửi tự động, vui lòng không trả lời.
+        </p>
+    </div>
+</body>
+</html>
