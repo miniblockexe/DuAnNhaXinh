@@ -21,20 +21,14 @@ namespace NhaXinh.Helpers
             {
                 return JsonSerializer.Deserialize<T>(json);
             }
-            catch
+            catch (JsonException)
             {
+                session.Remove(key);
                 return default;
             }
         }
 
         public static bool HasKey(this ISession session, string key)
-        {
-            return session.Keys.Contains(key);
-        }
-
-        public static void Remove(this ISession session, string key)
-        {
-            session.Remove(key);
-        }
+            => session.Keys.Contains(key);
     }
 }
