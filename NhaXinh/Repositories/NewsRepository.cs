@@ -15,15 +15,11 @@ namespace NhaXinh.Repositories
         }
 
         public async Task<News?> GetByIdAsync(int id)
-        {
-            return await _context.News.FindAsync(id);
-        }
+            => await _context.News.FindAsync(id);
 
         public async Task<News?> GetBySlugAsync(string slug)
-        {
-            return await _context.News
+            => await _context.News
                 .FirstOrDefaultAsync(n => n.Slug == slug && n.IsPublished);
-        }
 
         public async Task<(List<News> Items, int TotalCount)> GetPublishedPagedAsync(
             int page, int pageSize, string? keyword = null)
@@ -74,38 +70,32 @@ namespace NhaXinh.Repositories
         }
 
         public async Task<List<News>> GetFeaturedAsync(int count = 3)
-        {
-            return await _context.News
+            => await _context.News
                 .Where(n => n.IsFeatured && n.IsPublished)
                 .OrderByDescending(n => n.PublishedAt)
                 .Take(count)
                 .ToListAsync();
-        }
 
         public async Task<List<News>> GetRelatedAsync(int excludeNewsId, int count = 3)
-        {
-            return await _context.News
+            => await _context.News
                 .Where(n => n.Id != excludeNewsId && n.IsPublished)
                 .OrderByDescending(n => n.PublishedAt)
                 .Take(count)
                 .ToListAsync();
-        }
 
         public async Task AddAsync(News news)
         {
-            news.CreatedAt = DateTime.Now;
-
-            if (news.IsPublished && news.PublishedAt == null)
-                news.PublishedAt = DateTime.Now;
-
             await _context.News.AddAsync(news);
             await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(News news)
         {
-            if (news.IsPublished && news.PublishedAt == null)
-                news.PublishedAt = DateTime.Now;
+            var tracked = _context.News.Local
+                .FirstOrDefault(n => n.Id == news.Id);
+
+            if (tracked is not null)
+                _context.Entry(tracked).State = EntityState.Detached;
 
             _context.News.Update(news);
             await _context.SaveChangesAsync();
@@ -114,17 +104,15 @@ namespace NhaXinh.Repositories
         public async Task DeleteAsync(int id)
         {
             var news = await _context.News.FindAsync(id);
-            if (news == null) return;
+            if (news is null) return;
 
             _context.News.Remove(news);
             await _context.SaveChangesAsync();
         }
 
         public async Task<bool> SlugExistsAsync(string slug, int? excludeId = null)
-        {
-            return await _context.News
+            => await _context.News
                 .AnyAsync(n => n.Slug == slug &&
                                (!excludeId.HasValue || n.Id != excludeId.Value));
-        }
     }
 }

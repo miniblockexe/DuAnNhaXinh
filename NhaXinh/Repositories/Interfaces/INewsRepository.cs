@@ -8,16 +8,10 @@ namespace NhaXinh.Repositories.Interfaces
         Task<News?> GetBySlugAsync(string slug);
 
         Task<(List<News> Items, int TotalCount)> GetPublishedPagedAsync(
-            int page,
-            int pageSize,
-            string? keyword = null
-        );
+            int page, int pageSize, string? keyword = null);
 
         Task<(List<News> Items, int TotalCount)> GetAllPagedAsync(
-            int page,
-            int pageSize,
-            string? keyword = null
-        );
+            int page, int pageSize, string? keyword = null);
 
         Task<List<News>> GetFeaturedAsync(int count = 3);
         Task<List<News>> GetRelatedAsync(int excludeNewsId, int count = 3);

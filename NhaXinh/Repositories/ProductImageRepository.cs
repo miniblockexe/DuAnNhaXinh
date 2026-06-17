@@ -15,17 +15,13 @@ namespace NhaXinh.Repositories
         }
 
         public async Task<List<ProductImage>> GetByProductIdAsync(int productId)
-        {
-            return await _context.ProductImages
+            => await _context.ProductImages
                 .Where(img => img.ProductId == productId)
                 .OrderBy(img => img.DisplayOrder)
                 .ToListAsync();
-        }
 
         public async Task<ProductImage?> GetByIdAsync(int id)
-        {
-            return await _context.ProductImages.FindAsync(id);
-        }
+            => await _context.ProductImages.FindAsync(id);
 
         public async Task AddAsync(ProductImage image)
         {
@@ -42,7 +38,7 @@ namespace NhaXinh.Repositories
         public async Task DeleteAsync(int id)
         {
             var image = await _context.ProductImages.FindAsync(id);
-            if (image == null) return;
+            if (image is null) return;
 
             _context.ProductImages.Remove(image);
             await _context.SaveChangesAsync();
@@ -54,7 +50,7 @@ namespace NhaXinh.Repositories
                 .Where(img => img.ProductId == productId)
                 .ToListAsync();
 
-            if (!images.Any()) return;
+            if (images.Count == 0) return;
 
             _context.ProductImages.RemoveRange(images);
             await _context.SaveChangesAsync();

@@ -8,26 +8,24 @@ namespace NhaXinh.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationDbContext _context;
 
-        public UserRepository(
-            ApplicationDbContext context,
-            UserManager<ApplicationUser> userManager)
+        public UserRepository(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
         {
-            _context = context;
             _userManager = userManager;
+            _context = context;
         }
 
         public async Task<ApplicationUser?> GetByIdAsync(string id)
-        {
-            return await _userManager.FindByIdAsync(id);
-        }
+            => await _context.Users
+                .Include(u => u.Orders)
+                .FirstOrDefaultAsync(u => u.Id == id);
 
         public async Task<(List<ApplicationUser> Items, int TotalCount)> GetPagedAsync(
             int page, int pageSize, string? keyword = null)
         {
-            var query = _context.Users.AsQueryable();
+            var query = _userManager.Users.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(keyword))
             {
@@ -50,22 +48,30 @@ namespace NhaXinh.Repositories
         }
 
         public async Task UpdateAsync(ApplicationUser user)
-        {
-            await _userManager.UpdateAsync(user);
-        }
+            => await _userManager.UpdateAsync(user);
 
         public async Task SetActiveStatusAsync(string id, bool isActive)
         {
             var user = await _userManager.FindByIdAsync(id);
-            if (user == null) return;
+            if (user is null) return;
 
             user.IsActive = isActive;
+
+            if (isActive)
+            {
+                await _userManager.SetLockoutEndDateAsync(user, null);
+                await _userManager.ResetAccessFailedCountAsync(user);
+            }
+            else
+            {
+                await _userManager.SetLockoutEnabledAsync(user, true);
+                await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddYears(100));
+            }
+
             await _userManager.UpdateAsync(user);
         }
 
         public async Task<int> GetTotalCountAsync()
-        {
-            return await _context.Users.CountAsync();
-        }
+            => await _userManager.Users.CountAsync();
     }
 }

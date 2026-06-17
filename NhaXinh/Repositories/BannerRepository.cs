@@ -15,24 +15,18 @@ namespace NhaXinh.Repositories
         }
 
         public async Task<List<Banner>> GetAllAsync()
-        {
-            return await _context.Banners
+            => await _context.Banners
                 .OrderBy(b => b.DisplayOrder)
                 .ToListAsync();
-        }
 
         public async Task<List<Banner>> GetActiveAsync()
-        {
-            return await _context.Banners
+            => await _context.Banners
                 .Where(b => b.IsActive)
                 .OrderBy(b => b.DisplayOrder)
                 .ToListAsync();
-        }
 
         public async Task<Banner?> GetByIdAsync(int id)
-        {
-            return await _context.Banners.FindAsync(id);
-        }
+            => await _context.Banners.FindAsync(id);
 
         public async Task AddAsync(Banner banner)
         {
@@ -42,14 +36,26 @@ namespace NhaXinh.Repositories
 
         public async Task UpdateAsync(Banner banner)
         {
+            var tracked = _context.Banners.Local
+                .FirstOrDefault(b => b.Id == banner.Id);
+
+            if (tracked is not null)
+                _context.Entry(tracked).State = EntityState.Detached;
+
             _context.Banners.Update(banner);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateRangeAsync(List<Banner> banners)
+        {
+            _context.Banners.UpdateRange(banners);
             await _context.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(int id)
         {
             var banner = await _context.Banners.FindAsync(id);
-            if (banner == null) return;
+            if (banner is null) return;
 
             _context.Banners.Remove(banner);
             await _context.SaveChangesAsync();
