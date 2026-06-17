@@ -4,14 +4,17 @@
     {
         Products,
         Banners,
-        News
+        News,
+        Avatars,
+        Categories
     }
+
     public interface IFileService
     {
         Task<(bool Success, string Message, string? FilePath)> SaveImageAsync(
-           IFormFile file,
-           ImageFolder folder
-       );
+            IFormFile file,
+            ImageFolder folder
+        );
 
         void DeleteImage(string? relativePath);
 

@@ -8,65 +8,52 @@ namespace NhaXinh.Services
     {
         private readonly IProductRepository _productRepository;
         private readonly ICategoryRepository _categoryRepository;
+        private readonly ILogger<ProductService> _logger;
 
         public ProductService(
             IProductRepository productRepository,
-            ICategoryRepository categoryRepository)
+            ICategoryRepository categoryRepository,
+            ILogger<ProductService> logger)
         {
             _productRepository = productRepository;
             _categoryRepository = categoryRepository;
+            _logger = logger;
         }
 
         public async Task<Product?> GetByIdAsync(int id)
-        {
-            return await _productRepository.GetByIdAsync(id);
-        }
+            => await _productRepository.GetByIdAsync(id);
 
         public async Task<Product?> GetBySlugAsync(string slug)
-        {
-            return await _productRepository.GetBySlugAsync(slug);
-        }
+            => await _productRepository.GetBySlugAsync(slug);
 
         public async Task<Product?> GetWithImagesAsync(int id)
-        {
-            return await _productRepository.GetWithImagesAsync(id);
-        }
+            => await _productRepository.GetWithImagesAsync(id);
 
         public async Task<(List<Product> Items, int TotalCount, int TotalPages)> GetPagedAsync(
-            int page,
-            int pageSize,
-            int? categoryId = null,
-            string? keyword = null,
-            decimal? minPrice = null,
-            decimal? maxPrice = null,
+            int page, int pageSize,
+            int? categoryId = null, string? keyword = null,
+            decimal? minPrice = null, decimal? maxPrice = null,
             string? sortBy = null)
         {
-            if (page < 1) page = 1;
-            if (pageSize < 1) pageSize = 12;
+            page = Math.Max(1, page);
+            pageSize = pageSize < 1 ? 12 : pageSize;
 
             var (items, totalCount) = await _productRepository.GetPagedAsync(
                 page, pageSize, categoryId, keyword, minPrice, maxPrice, sortBy);
 
-            int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
             return (items, totalCount, totalPages);
         }
 
         public async Task<List<Product>> GetFeaturedAsync(int count = 6)
-        {
-            return await _productRepository.GetFeaturedAsync(count);
-        }
+            => await _productRepository.GetFeaturedAsync(count);
 
         public async Task<List<Product>> GetRelatedAsync(int productId, int categoryId, int count = 4)
-        {
-            return await _productRepository.GetRelatedAsync(productId, categoryId, count);
-        }
+            => await _productRepository.GetRelatedAsync(productId, categoryId, count);
 
         public async Task<List<Product>> GetLowStockAsync(int threshold = 5)
-        {
-            return await _productRepository.GetLowStockAsync(threshold);
-        }
-
+            => await _productRepository.GetLowStockAsync(threshold);
 
         public async Task<(bool Success, string Message)> CreateAsync(Product product)
         {
@@ -74,17 +61,12 @@ namespace NhaXinh.Services
                 return (false, $"Slug '{product.Slug}' đã tồn tại. Vui lòng chọn slug khác.");
 
             var category = await _categoryRepository.GetByIdAsync(product.CategoryId);
-            if (category == null)
+            if (category is null)
                 return (false, "Danh mục sản phẩm không tồn tại.");
 
-            if (product.Price < 0)
-                return (false, "Giá sản phẩm không hợp lệ.");
-
-            if (product.DiscountPrice.HasValue && product.DiscountPrice >= product.Price)
-                return (false, "Giá khuyến mãi phải nhỏ hơn giá gốc.");
-
-            if (product.StockQuantity < 0)
-                return (false, "Số lượng tồn kho không hợp lệ.");
+            var priceError = ValidatePrice(product);
+            if (priceError is not null)
+                return (false, priceError);
 
             product.CreatedAt = DateTime.Now;
             product.UpdatedAt = DateTime.Now;
@@ -96,24 +78,19 @@ namespace NhaXinh.Services
         public async Task<(bool Success, string Message)> UpdateAsync(Product product)
         {
             var existing = await _productRepository.GetByIdAsync(product.Id);
-            if (existing == null)
+            if (existing is null)
                 return (false, "Sản phẩm không tồn tại.");
 
             if (await _productRepository.SlugExistsAsync(product.Slug, product.Id))
                 return (false, $"Slug '{product.Slug}' đã tồn tại. Vui lòng chọn slug khác.");
 
             var category = await _categoryRepository.GetByIdAsync(product.CategoryId);
-            if (category == null)
+            if (category is null)
                 return (false, "Danh mục sản phẩm không tồn tại.");
 
-            if (product.Price < 0)
-                return (false, "Giá sản phẩm không hợp lệ.");
-
-            if (product.DiscountPrice.HasValue && product.DiscountPrice >= product.Price)
-                return (false, "Giá khuyến mãi phải nhỏ hơn giá gốc.");
-
-            if (product.StockQuantity < 0)
-                return (false, "Số lượng tồn kho không hợp lệ.");
+            var priceError = ValidatePrice(product);
+            if (priceError is not null)
+                return (false, priceError);
 
             product.UpdatedAt = DateTime.Now;
 
@@ -124,7 +101,7 @@ namespace NhaXinh.Services
         public async Task<(bool Success, string Message)> DeleteAsync(int id)
         {
             var product = await _productRepository.GetByIdAsync(id);
-            if (product == null)
+            if (product is null)
                 return (false, "Sản phẩm không tồn tại.");
 
             await _productRepository.DeleteAsync(id);
@@ -132,16 +109,12 @@ namespace NhaXinh.Services
         }
 
         public async Task IncrementViewCountAsync(int id)
-        {
-            await _productRepository.IncrementViewCountAsync(id);
-        }
+            => await _productRepository.IncrementViewCountAsync(id);
 
         public async Task<bool> IsInStockAsync(int productId, int requiredQuantity = 1)
         {
             var product = await _productRepository.GetByIdAsync(productId);
-            if (product == null) return false;
-
-            return product.StockQuantity >= requiredQuantity;
+            return product is not null && product.StockQuantity >= requiredQuantity;
         }
 
         public async Task<(bool Success, string Message)> ReduceStockAsync(int productId, int quantity)
@@ -150,7 +123,7 @@ namespace NhaXinh.Services
                 return (false, "Số lượng cần trừ phải lớn hơn 0.");
 
             var product = await _productRepository.GetByIdAsync(productId);
-            if (product == null)
+            if (product is null)
                 return (false, "Sản phẩm không tồn tại.");
 
             if (product.StockQuantity < quantity)
@@ -161,8 +134,20 @@ namespace NhaXinh.Services
         }
 
         public async Task<bool> SlugExistsAsync(string slug, int? excludeId = null)
+            => await _productRepository.SlugExistsAsync(slug, excludeId);
+
+        private static string? ValidatePrice(Product product)
         {
-            return await _productRepository.SlugExistsAsync(slug, excludeId);
+            if (product.Price < 0)
+                return "Giá sản phẩm không hợp lệ.";
+
+            if (product.DiscountPrice.HasValue && product.DiscountPrice >= product.Price)
+                return "Giá khuyến mãi phải nhỏ hơn giá gốc.";
+
+            if (product.StockQuantity < 0)
+                return "Số lượng tồn kho không hợp lệ.";
+
+            return null;
         }
     }
 }

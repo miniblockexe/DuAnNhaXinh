@@ -8,7 +8,7 @@ namespace NhaXinh.Services.Interfaces
         Task<List<Category>> GetAllActiveAsync();
 
         Task<List<Category>> GetParentCategoriesWithChildrenAsync();
-
+        Task<List<Category>> GetParentCategoriesAsync();
         Task<List<Category>> GetSubCategoriesAsync(int parentId);
 
         Task<Category?> GetByIdAsync(int id);

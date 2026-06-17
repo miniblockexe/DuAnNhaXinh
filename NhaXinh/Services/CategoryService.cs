@@ -7,48 +7,36 @@ namespace NhaXinh.Services
     public class CategoryService : ICategoryService
     {
         private readonly ICategoryRepository _categoryRepository;
+        private readonly ILogger<CategoryService> _logger;
 
-        public CategoryService(ICategoryRepository categoryRepository)
+        public CategoryService(ICategoryRepository categoryRepository, ILogger<CategoryService> logger)
         {
             _categoryRepository = categoryRepository;
+            _logger = logger;
         }
 
         public async Task<List<Category>> GetAllAsync()
-        {
-            return await _categoryRepository.GetAllAsync();
-        }
+            => await _categoryRepository.GetAllAsync();
 
         public async Task<List<Category>> GetAllActiveAsync()
-        {
-            return await _categoryRepository.GetAllActiveAsync();
-        }
+            => await _categoryRepository.GetAllActiveAsync();
+
+        public async Task<List<Category>> GetParentCategoriesAsync()
+            => await _categoryRepository.GetParentCategoriesAsync();
 
         public async Task<List<Category>> GetParentCategoriesWithChildrenAsync()
         {
-            var parents = await _categoryRepository.GetParentCategoriesAsync();
-
-            foreach (var parent in parents)
-            {
-                parent.SubCategories = await _categoryRepository.GetSubCategoriesAsync(parent.Id);
-            }
-
-            return parents;
+            return await _categoryRepository.GetParentCategoriesWithChildrenAsync();
         }
 
         public async Task<List<Category>> GetSubCategoriesAsync(int parentId)
-        {
-            return await _categoryRepository.GetSubCategoriesAsync(parentId);
-        }
+            => await _categoryRepository.GetSubCategoriesAsync(parentId);
 
         public async Task<Category?> GetByIdAsync(int id)
-        {
-            return await _categoryRepository.GetByIdAsync(id);
-        }
+            => await _categoryRepository.GetByIdAsync(id);
 
         public async Task<Category?> GetBySlugAsync(string slug)
-        {
-            return await _categoryRepository.GetBySlugAsync(slug);
-        }
+            => await _categoryRepository.GetBySlugAsync(slug);
 
         public async Task<(bool Success, string Message)> CreateAsync(Category category)
         {
@@ -58,7 +46,7 @@ namespace NhaXinh.Services
             if (category.ParentId.HasValue)
             {
                 var parent = await _categoryRepository.GetByIdAsync(category.ParentId.Value);
-                if (parent == null)
+                if (parent is null)
                     return (false, "Danh mục cha không tồn tại.");
             }
 
@@ -71,7 +59,7 @@ namespace NhaXinh.Services
         public async Task<(bool Success, string Message)> UpdateAsync(Category category)
         {
             var existing = await _categoryRepository.GetByIdAsync(category.Id);
-            if (existing == null)
+            if (existing is null)
                 return (false, "Danh mục không tồn tại.");
 
             if (await _categoryRepository.SlugExistsAsync(category.Slug, category.Id))
@@ -87,7 +75,7 @@ namespace NhaXinh.Services
         public async Task<(bool Success, string Message)> DeleteAsync(int id)
         {
             var category = await _categoryRepository.GetByIdAsync(id);
-            if (category == null)
+            if (category is null)
                 return (false, "Danh mục không tồn tại.");
 
             if (await _categoryRepository.HasSubCategoriesAsync(id))
@@ -101,8 +89,6 @@ namespace NhaXinh.Services
         }
 
         public async Task<bool> SlugExistsAsync(string slug, int? excludeId = null)
-        {
-            return await _categoryRepository.SlugExistsAsync(slug, excludeId);
-        }
+            => await _categoryRepository.SlugExistsAsync(slug, excludeId);
     }
 }

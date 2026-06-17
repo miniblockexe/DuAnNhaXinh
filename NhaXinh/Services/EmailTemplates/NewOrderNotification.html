@@ -1,28 +1,83 @@
 ﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đơn hàng mới — Nhà Xinh Admin</title>
 </head>
-<body>
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
-        <h2 style="color: #27ae60;">Có đơn hàng mới!</h2>
-        <table style="width:100%; border-collapse:collapse;">
-            <tr>
-                <td style="padding:8px; border:1px solid #ddd;">Mã đơn hàng</td>
-                <td style="padding:8px; border:1px solid #ddd;"><strong>{{OrderCode}}</strong></td>
-            </tr>
-            <tr>
-                <td style="padding:8px; border:1px solid #ddd;">Khách hàng</td>
-                <td style="padding:8px; border:1px solid #ddd;">{{CustomerName}}</td>
-            </tr>
-            <tr>
-                <td style="padding:8px; border:1px solid #ddd;">Tổng tiền</td>
-                <td style="padding:8px; border:1px solid #ddd;"><strong>{{TotalAmount}}</strong></td>
-            </tr>
-        </table>
-        <p style="margin-top:16px;">
-            Vui lòng đăng nhập hệ thống để xử lý đơn hàng.
-        </p>
-    </div>
+<body style="margin:0;padding:0;background:#f5efe8;font-family:'Segoe UI',Arial,sans-serif;">
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5efe8;padding:32px 16px;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+
+                    <tr>
+                        <td style="background:linear-gradient(135deg,#2c2416 0%,#4a3520 100%);border-radius:16px 16px 0 0;padding:32px 40px;text-align:center;">
+                            <p style="margin:0 0 4px;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.55);">NHÀ XINH ADMIN</p>
+                            <h1 style="margin:0;font-size:24px;font-weight:700;color:#c9a96e;letter-spacing:-.02em;">Nhà Xinh</h1>
+                            <p style="margin:16px 0 0;font-size:13px;color:rgba(255,255,255,.7);">Hệ thống quản lý nội thất</p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="background:#c9a96e;padding:14px 40px;text-align:center;">
+                            <p style="margin:0;font-size:14px;font-weight:700;color:#fff;letter-spacing:.04em;">
+                                &nbsp;BẠN CÓ ĐƠN HÀNG MỚI
+                            </p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="background:#ffffff;padding:36px 40px;">
+
+                            <p style="margin:0 0 24px;font-size:15px;color:#4a3f35;line-height:1.6;">
+                                Xin chào Admin, một đơn hàng mới vừa được đặt trên hệ thống. Vui lòng xử lý sớm nhất có thể.
+                            </p>
+
+                            <table width="100%" cellpadding="0" cellspacing="0" style="border-radius:10px;overflow:hidden;border:1px solid #f0e8dc;">
+                                <tr style="background:#faf6f1;">
+                                    <td style="padding:12px 18px;font-size:12px;font-weight:700;color:#8a7a6a;text-transform:uppercase;letter-spacing:.06em;width:40%;border-bottom:1px solid #f0e8dc;">Mã đơn hàng</td>
+                                    <td style="padding:12px 18px;font-size:15px;font-weight:700;color:#c9a96e;border-bottom:1px solid #f0e8dc;">{{OrderCode}}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:12px 18px;font-size:12px;font-weight:700;color:#8a7a6a;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #f0e8dc;">Khách hàng</td>
+                                    <td style="padding:12px 18px;font-size:14px;color:#2c2416;border-bottom:1px solid #f0e8dc;">{{CustomerName}}</td>
+                                </tr>
+                                <tr style="background:#fdfaf7;">
+                                    <td style="padding:12px 18px;font-size:12px;font-weight:700;color:#8a7a6a;text-transform:uppercase;letter-spacing:.06em;">Tổng tiền</td>
+                                    <td style="padding:12px 18px;font-size:18px;font-weight:700;color:#2c2416;">{{TotalAmount}}</td>
+                                </tr>
+                            </table>
+
+                            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:28px;">
+                                <tr>
+                                    <td align="center">
+                                        <a href="{{AdminOrderUrl}}" style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#c9a96e,#b8913a);color:#fff;font-size:14px;font-weight:700;text-decoration:none;border-radius:8px;letter-spacing:.04em;">
+                                            XEM CHI TIẾT ĐƠN HÀNG →
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="background:#faf6f1;border-top:1px solid #f0e8dc;border-radius:0 0 16px 16px;padding:20px 40px;text-align:center;">
+                            <p style="margin:0 0 4px;font-size:12px;color:#a09080;">
+                                © 2026 Nhà Xinh — 123 Đường Nội Thất, Quận 1, TP. Hồ Chí Minh
+                            </p>
+                            <p style="margin:0;font-size:11px;color:#c0b0a0;">
+                                Email này được gửi tự động từ hệ thống, vui lòng không trả lời.
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+
 </body>
 </html>

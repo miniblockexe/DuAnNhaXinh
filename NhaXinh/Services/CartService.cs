@@ -10,8 +10,6 @@ namespace NhaXinh.Services
 
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        private ISession Session => _httpContextAccessor.HttpContext!.Session;
-
         public CartService(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
@@ -27,12 +25,6 @@ namespace NhaXinh.Services
             return JsonSerializer.Deserialize<List<CartItem>>(json) ?? new List<CartItem>();
         }
 
-        private void SaveCart(List<CartItem> cart)
-        {
-            var json = JsonSerializer.Serialize(cart);
-            Session.SetString(CartSessionKey, json);
-        }
-
         public void AddToCart(Product product, int quantity = 1)
         {
             if (quantity <= 0) return;
@@ -40,7 +32,7 @@ namespace NhaXinh.Services
             var cart = GetCart();
             var existing = cart.FirstOrDefault(x => x.ProductId == product.Id);
 
-            if (existing != null)
+            if (existing is not null)
             {
                 existing.Quantity += quantity;
             }
@@ -64,7 +56,7 @@ namespace NhaXinh.Services
             var cart = GetCart();
             var item = cart.FirstOrDefault(x => x.ProductId == productId);
 
-            if (item == null) return;
+            if (item is null) return;
 
             if (quantity <= 0)
                 cart.Remove(item);
@@ -79,11 +71,10 @@ namespace NhaXinh.Services
             var cart = GetCart();
             var item = cart.FirstOrDefault(x => x.ProductId == productId);
 
-            if (item != null)
-            {
-                cart.Remove(item);
-                SaveCart(cart);
-            }
+            if (item is null) return;
+
+            cart.Remove(item);
+            SaveCart(cart);
         }
 
         public void ClearCart()
@@ -99,6 +90,15 @@ namespace NhaXinh.Services
         public int GetTotalItems()
         {
             return GetCart().Sum(x => x.Quantity);
+        }
+        private ISession Session
+            => _httpContextAccessor.HttpContext?.Session
+               ?? throw new InvalidOperationException(
+                   "CartService yêu cầu HttpContext");
+
+        private void SaveCart(List<CartItem> cart)
+        {
+            Session.SetString(CartSessionKey, JsonSerializer.Serialize(cart));
         }
     }
 }
