@@ -15,26 +15,20 @@ namespace NhaXinh.Repositories
         }
 
         public async Task<Product?> GetByIdAsync(int id)
-        {
-            return await _context.Products
+            => await _context.Products
                 .Include(p => p.Category)
                 .FirstOrDefaultAsync(p => p.Id == id);
-        }
 
         public async Task<Product?> GetBySlugAsync(string slug)
-        {
-            return await _context.Products
+            => await _context.Products
                 .Include(p => p.Category)
                 .FirstOrDefaultAsync(p => p.Slug == slug && p.IsActive);
-        }
 
         public async Task<Product?> GetWithImagesAsync(int id)
-        {
-            return await _context.Products
+            => await _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.ProductImages.OrderBy(img => img.DisplayOrder))
                 .FirstOrDefaultAsync(p => p.Id == id);
-        }
 
         public async Task<(List<Product> Items, int TotalCount)> GetPagedAsync(
             int page, int pageSize,
@@ -65,8 +59,11 @@ namespace NhaXinh.Repositories
                     (p.ShortDescription != null && p.ShortDescription.ToLower().Contains(kw)));
             }
 
-            if (minPrice.HasValue) query = query.Where(p => (p.DiscountPrice ?? p.Price) >= minPrice);
-            if (maxPrice.HasValue) query = query.Where(p => (p.DiscountPrice ?? p.Price) <= maxPrice);
+            if (minPrice.HasValue)
+                query = query.Where(p => (p.DiscountPrice ?? p.Price) >= minPrice.Value);
+
+            if (maxPrice.HasValue)
+                query = query.Where(p => (p.DiscountPrice ?? p.Price) <= maxPrice.Value);
 
             query = sortBy switch
             {
@@ -77,7 +74,6 @@ namespace NhaXinh.Repositories
             };
 
             var totalCount = await query.CountAsync();
-
             var items = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
@@ -87,42 +83,41 @@ namespace NhaXinh.Repositories
         }
 
         public async Task<List<Product>> GetFeaturedAsync(int count = 6)
-        {
-            return await _context.Products
+            => await _context.Products
                 .Where(p => p.IsFeatured && p.IsActive)
                 .OrderByDescending(p => p.CreatedAt)
                 .Take(count)
                 .ToListAsync();
-        }
 
         public async Task<List<Product>> GetRelatedAsync(int productId, int categoryId, int count = 4)
-        {
-            return await _context.Products
+            => await _context.Products
                 .Where(p => p.CategoryId == categoryId && p.Id != productId && p.IsActive)
                 .OrderByDescending(p => p.ViewCount)
                 .Take(count)
                 .ToListAsync();
-        }
 
         public async Task<List<Product>> GetLowStockAsync(int threshold = 5)
-        {
-            return await _context.Products
+            => await _context.Products
                 .Include(p => p.Category)
                 .Where(p => p.StockQuantity <= threshold && p.IsActive)
                 .OrderBy(p => p.StockQuantity)
                 .ToListAsync();
-        }
 
         public async Task AddAsync(Product product)
         {
-            product.CreatedAt = DateTime.Now;
-            product.UpdatedAt = DateTime.Now;
             await _context.Products.AddAsync(product);
             await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(Product product)
         {
+
+            var tracked = _context.ChangeTracker.Entries<Product>()
+        .FirstOrDefault(e => e.Entity.Id == product.Id);
+
+            if (tracked is not null)
+                tracked.State = EntityState.Detached;
+
             product.UpdatedAt = DateTime.Now;
             _context.Products.Update(product);
             await _context.SaveChangesAsync();
@@ -131,7 +126,8 @@ namespace NhaXinh.Repositories
         public async Task DeleteAsync(int id)
         {
             var product = await _context.Products.FindAsync(id);
-            if (product == null) return;
+            if (product is null) return;
+
 
             product.IsActive = false;
             product.UpdatedAt = DateTime.Now;
@@ -141,7 +137,7 @@ namespace NhaXinh.Repositories
         public async Task UpdateStockAsync(int productId, int quantity)
         {
             var product = await _context.Products.FindAsync(productId);
-            if (product == null) return;
+            if (product is null) return;
 
             product.StockQuantity -= quantity;
             product.UpdatedAt = DateTime.Now;
@@ -150,17 +146,15 @@ namespace NhaXinh.Repositories
 
         public async Task IncrementViewCountAsync(int id)
         {
-            var product = await _context.Products.FindAsync(id);
-            if (product == null) return;
-
-            product.ViewCount++;
-            await _context.SaveChangesAsync();
+            await _context.Products
+                .Where(p => p.Id == id)
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(p => p.ViewCount, p => p.ViewCount + 1));
         }
 
         public async Task<bool> SlugExistsAsync(string slug, int? excludeId = null)
-        {
-            return await _context.Products
-                .AnyAsync(p => p.Slug == slug && (!excludeId.HasValue || p.Id != excludeId.Value));
-        }
+            => await _context.Products
+                .AnyAsync(p => p.Slug == slug &&
+                               (!excludeId.HasValue || p.Id != excludeId.Value));
     }
 }

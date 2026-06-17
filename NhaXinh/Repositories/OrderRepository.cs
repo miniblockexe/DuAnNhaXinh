@@ -15,36 +15,28 @@ namespace NhaXinh.Repositories
         }
 
         public async Task<Order?> GetByIdAsync(int id)
-        {
-            return await _context.Orders
+            => await _context.Orders
                 .Include(o => o.User)
                 .FirstOrDefaultAsync(o => o.Id == id);
-        }
 
         public async Task<Order?> GetByCodeAsync(string orderCode)
-        {
-            return await _context.Orders
+            => await _context.Orders
                 .Include(o => o.User)
                 .FirstOrDefaultAsync(o => o.OrderCode == orderCode);
-        }
 
         public async Task<Order?> GetWithDetailsAsync(int id)
-        {
-            return await _context.Orders
+            => await _context.Orders
                 .Include(o => o.User)
                 .Include(o => o.OrderDetails)
                     .ThenInclude(od => od.Product)
                 .FirstOrDefaultAsync(o => o.Id == id);
-        }
 
         public async Task<List<Order>> GetByUserIdAsync(string userId)
-        {
-            return await _context.Orders
+            => await _context.Orders
                 .Include(o => o.OrderDetails)
                 .Where(o => o.UserId == userId)
                 .OrderByDescending(o => o.CreatedAt)
                 .ToListAsync();
-        }
 
         public async Task<(List<Order> Items, int TotalCount)> GetPagedAsync(
             int page, int pageSize,
@@ -79,8 +71,6 @@ namespace NhaXinh.Repositories
 
         public async Task AddAsync(Order order)
         {
-            order.CreatedAt = DateTime.Now;
-            order.UpdatedAt = DateTime.Now;
             await _context.Orders.AddAsync(order);
             await _context.SaveChangesAsync();
         }
@@ -88,7 +78,7 @@ namespace NhaXinh.Repositories
         public async Task UpdateStatusAsync(int id, OrderStatus status)
         {
             var order = await _context.Orders.FindAsync(id);
-            if (order == null) return;
+            if (order is null) return;
 
             order.Status = status;
             order.UpdatedAt = DateTime.Now;
@@ -96,39 +86,36 @@ namespace NhaXinh.Repositories
         }
 
         public async Task<int> GetTotalCountAsync()
-        {
-            return await _context.Orders.CountAsync();
-        }
+            => await _context.Orders.CountAsync();
 
         public async Task<decimal> GetTotalRevenueAsync()
-        {
-            return await _context.Orders
+            => await _context.Orders
                 .Where(o => o.Status == OrderStatus.Delivered)
                 .SumAsync(o => o.TotalAmount);
-        }
 
         public async Task<int> GetCountByStatusAsync(OrderStatus status)
-        {
-            return await _context.Orders.CountAsync(o => o.Status == status);
-        }
+            => await _context.Orders.CountAsync(o => o.Status == status);
 
         public async Task<List<Order>> GetRecentAsync(int count = 10)
-        {
-            return await _context.Orders
+            => await _context.Orders
                 .Include(o => o.User)
                 .OrderByDescending(o => o.CreatedAt)
                 .Take(count)
                 .ToListAsync();
-        }
+
         public async Task<string> GenerateOrderCodeAsync()
         {
-            var year = DateTime.Now.Year;
-            var prefix = $"NX{year}";
+            var datePart = DateTime.Now.ToString("yyyyMMdd");
+            var randomPart = Random.Shared.Next(1000, 9999);
+            var code = $"NX{datePart}{randomPart}";
 
-            var countThisYear = await _context.Orders
-                .CountAsync(o => o.OrderCode.StartsWith(prefix));
+            while (await _context.Orders.AnyAsync(o => o.OrderCode == code))
+            {
+                randomPart = Random.Shared.Next(1000, 9999);
+                code = $"NX{datePart}{randomPart}";
+            }
 
-            return $"{prefix}{(countThisYear + 1):D4}";
+            return code;
         }
     }
 }

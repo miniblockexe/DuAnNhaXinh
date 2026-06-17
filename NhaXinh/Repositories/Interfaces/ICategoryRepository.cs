@@ -7,6 +7,7 @@ namespace NhaXinh.Repositories.Interfaces
         Task<List<Category>> GetAllAsync();
         Task<List<Category>> GetAllActiveAsync();
         Task<List<Category>> GetParentCategoriesAsync();
+        Task<List<Category>> GetParentCategoriesWithChildrenAsync();
         Task<List<Category>> GetSubCategoriesAsync(int parentId);
 
         Task<Category?> GetByIdAsync(int id);

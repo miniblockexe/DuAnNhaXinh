@@ -11,11 +11,9 @@ namespace NhaXinh.Repositories.Interfaces
         Task<List<Order>> GetByUserIdAsync(string userId);
 
         Task<(List<Order> Items, int TotalCount)> GetPagedAsync(
-            int page,
-            int pageSize,
+            int page, int pageSize,
             OrderStatus? status = null,
-            string? keyword = null
-        );
+            string? keyword = null);
 
         Task AddAsync(Order order);
         Task UpdateStatusAsync(int id, OrderStatus status);
