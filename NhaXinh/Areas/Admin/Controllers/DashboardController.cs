@@ -1,12 +1,30 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using NhaXinh.Services.Interfaces;
 
 namespace NhaXinh.Areas.Admin.Controllers
 {
+    [Area("Admin")]
+    [Authorize(Roles = "Admin,Staff")]
     public class DashboardController : Controller
     {
-        public IActionResult Index()
+        private readonly IOrderService _orderService;
+        private readonly IProductService _productService;
+
+        public DashboardController(IOrderService orderService, IProductService productService)
         {
-            return View();
+            _orderService = orderService;
+            _productService = productService;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var stats = await _orderService.GetDashboardStatsAsync();
+            var lowStock = await _productService.GetLowStockAsync(threshold: 5);
+
+            ViewBag.LowStockProducts = lowStock;
+
+            return View(stats);
         }
     }
 }
