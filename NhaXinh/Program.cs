@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using NhaXinh.Data;
 using NhaXinh.Extensions;
 using NhaXinh.Models;
+using NhaXinh.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,6 +52,9 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
     options.Cookie.Name = ".NhaXinh.Session";
 });
+
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection("EmailSettings"));
 
 builder.Services.AddProjectServices();
 
