@@ -7,26 +7,22 @@ namespace NhaXinh.Services
     public class BannerService : IBannerService
     {
         private readonly IBannerRepository _bannerRepository;
+        private readonly ILogger<BannerService> _logger;
 
-        public BannerService(IBannerRepository bannerRepository)
+        public BannerService(IBannerRepository bannerRepository, ILogger<BannerService> logger)
         {
             _bannerRepository = bannerRepository;
+            _logger = logger;
         }
 
         public async Task<List<Banner>> GetAllAsync()
-        {
-            return await _bannerRepository.GetAllAsync();
-        }
+            => await _bannerRepository.GetAllAsync();
 
         public async Task<List<Banner>> GetActiveAsync()
-        {
-            return await _bannerRepository.GetActiveAsync();
-        }
+            => await _bannerRepository.GetActiveAsync();
 
         public async Task<Banner?> GetByIdAsync(int id)
-        {
-            return await _bannerRepository.GetByIdAsync(id);
-        }
+            => await _bannerRepository.GetByIdAsync(id);
 
         public async Task<(bool Success, string Message)> CreateAsync(Banner banner)
         {
@@ -49,7 +45,7 @@ namespace NhaXinh.Services
         public async Task<(bool Success, string Message)> UpdateAsync(Banner banner)
         {
             var existing = await _bannerRepository.GetByIdAsync(banner.Id);
-            if (existing == null)
+            if (existing is null)
                 return (false, "Banner không tồn tại.");
 
             if (string.IsNullOrWhiteSpace(banner.Title))
@@ -65,7 +61,7 @@ namespace NhaXinh.Services
         public async Task<(bool Success, string Message)> DeleteAsync(int id)
         {
             var existing = await _bannerRepository.GetByIdAsync(id);
-            if (existing == null)
+            if (existing is null)
                 return (false, "Banner không tồn tại.");
 
             await _bannerRepository.DeleteAsync(id);
@@ -75,13 +71,19 @@ namespace NhaXinh.Services
         public async Task<(bool Success, string Message)> UpdateDisplayOrderAsync(
             List<(int BannerId, int Order)> orderList)
         {
-            if (orderList == null || !orderList.Any())
+            if (orderList is null || orderList.Count == 0)
                 return (false, "Danh sách sắp xếp trống.");
+
+            var all = await _bannerRepository.GetAllAsync();
+            var bannerDict = all.ToDictionary(b => b.Id);
 
             foreach (var (bannerId, order) in orderList)
             {
-                var banner = await _bannerRepository.GetByIdAsync(bannerId);
-                if (banner == null) continue;
+                if (!bannerDict.TryGetValue(bannerId, out var banner))
+                {
+                    _logger.LogWarning("UpdateDisplayOrder: BannerId={BannerId} không tồn tại, bỏ qua.", bannerId);
+                    continue;
+                }
 
                 banner.DisplayOrder = order;
                 await _bannerRepository.UpdateAsync(banner);

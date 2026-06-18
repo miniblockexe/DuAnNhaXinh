@@ -29,5 +29,13 @@ namespace NhaXinh.Services.Interfaces
         Task<(bool Success, string Message)> DeleteAsync(int id);
 
         Task<bool> SlugExistsAsync(string slug, int? excludeId = null);
+        Task<(List<News> Items, int TotalCount)> GetPublishedNewsAsync(
+           int page, int pageSize, string? keyword = null);
+
+        Task<List<News>> GetFeaturedNewsAsync(int count = 5);
+
+        Task<News?> GetBySlugAsync(string slug);
+
+        Task<List<News>> GetRelatedNewsAsync(int excludeId, int count = 4);
     }
 }
