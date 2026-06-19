@@ -1,0 +1,83 @@
+﻿/* ==============================================
+   error.css — Error/404 + Error/500 page styles
+   ============================================== */
+
+.nx-error-section {
+    min-height: calc(100vh - 160px);
+    display: flex;
+    align-items: center;
+    padding: 4rem 0;
+    background: linear-gradient(135deg, #fdf8f2 0%, #f5ece0 100%);
+}
+
+.nx-error-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 3rem 2.5rem;
+    box-shadow: 0 8px 40px rgba(44,36,22,.10);
+}
+
+.nx-error-card__illustration {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.nx-error-card__code {
+    font-family: 'Playfair Display', serif;
+    font-size: 7rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #f5ece0;
+    letter-spacing: -4px;
+    user-select: none;
+}
+
+.nx-error-card__icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3.5rem;
+    color: #c9a96e;
+}
+
+.nx-error-card__title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #2c2416;
+    margin-bottom: .75rem;
+}
+
+.nx-error-card__desc {
+    font-family: 'Inter', sans-serif;
+    font-size: .95rem;
+    color: #6b5f55;
+    line-height: 1.65;
+    margin-bottom: 2rem;
+}
+
+.nx-error-card__actions {
+    display: flex;
+    gap: .75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+}
+
+.nx-error-card__hint {
+    font-family: 'Inter', sans-serif;
+    font-size: .85rem;
+    color: #a0907e;
+    margin: 0;
+}
+
+    .nx-error-card__hint a {
+        color: #c9a96e;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+        .nx-error-card__hint a:hover {
+            color: #b8913a;
+        }

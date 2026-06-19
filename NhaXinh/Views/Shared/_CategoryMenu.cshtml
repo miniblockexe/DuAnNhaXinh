@@ -1,13 +1,62 @@
-﻿<!DOCTYPE html>
+﻿@model IEnumerable<NhaXinh.Models.Category>
 
-<html>
-<head>
-    <meta name="viewport" content="width=device-width" />
-    <title>@ViewBag.Title</title>
-</head>
-<body>
-    <div>
-        @RenderBody()
-    </div>
-</body>
-</html>
+@if (Model != null && Model.Any())
+{
+    var roots = Model.Where(c => c.ParentId == null).OrderBy(c => c.DisplayOrder).ToList();
+
+    <ul class="nx-cat-menu list-unstyled mb-0 d-flex flex-wrap gap-1">
+        <li class="nx-cat-menu__item">
+            <a asp-controller="Product" asp-action="Index"
+               class="nx-cat-menu__link @(ViewData["CategoryId"] == null ? "active" : "")">
+                Tất cả
+            </a>
+        </li>
+
+        @foreach (var cat in roots)
+        {
+            var subs = Model.Where(c => c.ParentId == cat.Id).OrderBy(c => c.DisplayOrder).ToList();
+            bool isActive = ViewData["CategoryId"]?.ToString() == cat.Id.ToString();
+
+            @if (subs.Any())
+            {
+                <li class="nx-cat-menu__item nx-cat-menu__item--has-sub dropdown">
+                    <a class="nx-cat-menu__link dropdown-toggle @(isActive ? "active" : "")"
+                       href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        @cat.Name
+                    </a>
+                    <ul class="dropdown-menu nx-cat-menu__dropdown shadow-sm border-0">
+                        <li>
+                            <a class="dropdown-item nx-cat-menu__sub-link"
+                               asp-controller="Product" asp-action="Index"
+                               asp-route-categoryId="@cat.Id">
+                                <i class="bi bi-grid-3x3-gap me-1 opacity-50"></i> Tất cả @cat.Name
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider my-1" /></li>
+                        @foreach (var sub in subs)
+                        {
+                            <li>
+                                <a class="dropdown-item nx-cat-menu__sub-link"
+                                   asp-controller="Product" asp-action="Index"
+                                   asp-route-categoryId="@sub.Id">
+                                    @sub.Name
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </li>
+            }
+            else
+            {
+                <li class="nx-cat-menu__item">
+                    <a class="nx-cat-menu__link @(isActive ? "active" : "")"
+                       asp-controller="Product" asp-action="Index"
+                       asp-route-categoryId="@cat.Id">
+                        @cat.Name
+                    </a>
+                </li>
+            }
+        }
+    </ul>
+}
+

@@ -1,0 +1,199 @@
+﻿/* ==============================================
+   checkout.css — Order/Checkout page
+   Dùng kèm cart.css (cart-summary, btn-checkout,
+   breadcrumb-bar, section-heading đã có ở đó)
+   ============================================== */
+
+/* ── Checkout section block ── */
+.checkout-section {
+    background: #fff;
+    border-radius: 14px;
+    padding: 1.75rem;
+    box-shadow: 0 4px 18px rgba(44,36,22,.07);
+}
+
+.checkout-section__title {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #2c2416;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f0e8dc;
+}
+
+/* Step number badge */
+.checkout-step {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #c9a96e, #b8913a);
+    color: #fff;
+    border-radius: 50%;
+    font-size: .82rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+/* Form inputs */
+.checkout-label {
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-size: .84rem;
+    font-weight: 600;
+    color: #4a3f35;
+    margin-bottom: .45rem;
+}
+
+.checkout-input {
+    display: block;
+    width: 100%;
+    padding: .7rem 1rem;
+    border: 1.5px solid #e8ddd0;
+    border-radius: 9px;
+    font-family: 'Inter', sans-serif;
+    font-size: .92rem;
+    color: #2c2416;
+    background: #fdfaf7;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    resize: none;
+}
+
+    .checkout-input:focus {
+        border-color: #c9a96e;
+        box-shadow: 0 0 0 3px rgba(201,169,110,.15);
+        background: #fff;
+    }
+
+/* ── Payment options ── */
+.payment-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border: 1.5px solid #e8ddd0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    background: #fdfaf7;
+}
+
+    .payment-option:hover {
+        border-color: #c9a96e;
+        background: #fff;
+    }
+
+    .payment-option.active {
+        border-color: #c9a96e;
+        background: #fffdf9;
+        box-shadow: 0 0 0 3px rgba(201,169,110,.12);
+    }
+
+/* Hide radio */
+.payment-radio {
+    display: none;
+}
+
+.payment-option__icon {
+    width: 42px;
+    height: 42px;
+    background: linear-gradient(135deg, #f5efe8, #ecdfd1);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #c9a96e;
+    flex-shrink: 0;
+}
+
+.payment-option.active .payment-option__icon {
+    background: linear-gradient(135deg, #c9a96e, #b8913a);
+    color: #fff;
+}
+
+.payment-option__name {
+    font-family: 'Inter', sans-serif;
+    font-size: .9rem;
+    font-weight: 600;
+    color: #2c2416;
+    margin: 0 0 .2rem;
+}
+
+.payment-option__desc {
+    font-family: 'Inter', sans-serif;
+    font-size: .8rem;
+    color: #8a7a6a;
+    margin: 0;
+}
+
+/* ── Checkout items list ── */
+.checkout-items {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    padding-bottom: .75rem;
+    border-bottom: 1px solid #f0e8dc;
+    margin-bottom: .5rem;
+}
+
+.checkout-item {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+}
+
+.checkout-item__img-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+
+    .checkout-item__img-wrap img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 9px;
+        display: block;
+    }
+
+.checkout-item__qty {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    background: #2c2416;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: .68rem;
+    font-weight: 700;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.checkout-item__name {
+    font-family: 'Inter', sans-serif;
+    font-size: .85rem;
+    font-weight: 500;
+    color: #2c2416;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.checkout-item__price {
+    font-family: 'Inter', sans-serif;
+    font-size: .88rem;
+    font-weight: 700;
+    color: #c9a96e;
+    margin: 0;
+    white-space: nowrap;
+}

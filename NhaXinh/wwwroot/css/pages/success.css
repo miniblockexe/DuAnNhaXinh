@@ -1,0 +1,201 @@
+﻿/* ==============================================
+   success.css — Order/Success page
+   ============================================== */
+
+/* Section heading (shared) */
+.section-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-weight: 700;
+    color: #2c2416;
+}
+
+/* ── Success card (top icon + title) ── */
+.success-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 3rem 2rem 2.5rem;
+    box-shadow: 0 8px 36px rgba(44,36,22,.09);
+}
+
+.success-icon-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.success-icon {
+    font-size: 5rem;
+    color: #2e7d52;
+    filter: drop-shadow(0 4px 12px rgba(46,125,82,.25));
+    animation: pop-in .5s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+@keyframes pop-in {
+    from {
+        opacity: 0;
+        transform: scale(.5);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.success-order-code {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #c9a96e;
+    letter-spacing: .04em;
+}
+
+/* ── Info section ── */
+.success-info {
+    background: #fff;
+    border-radius: 14px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 18px rgba(44,36,22,.07);
+}
+
+.success-info__title {
+    font-family: 'Inter', sans-serif;
+    font-size: .78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #c9a96e;
+    margin-bottom: 1rem;
+    padding-bottom: .75rem;
+    border-bottom: 1px solid #f0e8dc;
+}
+
+.success-info__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: .55rem 0;
+    font-family: 'Inter', sans-serif;
+    font-size: .88rem;
+    border-bottom: 1px solid #f9f5f0;
+}
+
+    .success-info__row:last-child {
+        border-bottom: none;
+    }
+
+    .success-info__row span:first-child {
+        color: #8a7a6a;
+        font-weight: 500;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .success-info__row span:last-child {
+        color: #2c2416;
+        text-align: right;
+    }
+
+.success-info__row--total {
+    font-weight: 700;
+    font-size: .95rem;
+    padding-top: .85rem;
+    margin-top: .25rem;
+    border-top: 2px solid #f0e8dc;
+    border-bottom: none !important;
+}
+
+    .success-info__row--total span:last-child {
+        color: #c9a96e;
+        font-size: 1.05rem;
+    }
+
+/* ── Status timeline ── */
+.success-status {
+    background: #fff;
+    border-radius: 14px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 18px rgba(44,36,22,.07);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.success-status__step {
+    display: flex;
+    align-items: flex-start;
+    gap: .85rem;
+    position: relative;
+}
+
+.success-status__dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #e8ddd0;
+    background: #fff;
+    flex-shrink: 0;
+    margin-top: .15rem;
+    transition: all .2s;
+}
+
+.success-status__step.active .success-status__dot {
+    background: #2e7d52;
+    border-color: #2e7d52;
+    box-shadow: 0 0 0 4px rgba(46,125,82,.15);
+}
+
+.success-status__label {
+    font-family: 'Inter', sans-serif;
+    font-size: .88rem;
+    font-weight: 500;
+    color: #8a7a6a;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.success-status__step.active .success-status__label {
+    color: #2c2416;
+    font-weight: 700;
+}
+
+.success-status__time {
+    font-family: 'Inter', sans-serif;
+    font-size: .78rem;
+    color: #2e7d52;
+    margin: .1rem 0 0;
+}
+
+/* Connecting line between steps */
+.success-status__line {
+    width: 2px;
+    height: 28px;
+    background: #f0e8dc;
+    margin-left: 7px;
+    flex-shrink: 0;
+}
+
+/* ── Action buttons ── */
+.btn-add-cart {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: .75rem 1.75rem;
+    background: linear-gradient(135deg, #c9a96e, #b8913a);
+    color: #fff;
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: .92rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity .2s, transform .15s;
+    box-shadow: 0 4px 14px rgba(201,169,110,.3);
+}
+
+    .btn-add-cart:hover {
+        opacity: .9;
+        transform: translateY(-2px);
+        color: #fff;
+    }
