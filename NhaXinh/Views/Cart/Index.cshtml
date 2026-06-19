@@ -1,5 +1,181 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model NhaXinh.ViewModels.Cart.CartViewModel
 @{
+    ViewData["Title"] = "Giỏ hàng";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/cart.css" asp-append-version="true" />
+}
+
+<div class="breadcrumb-bar">
+    <div class="container-xl">
+        <ol class="breadcrumb mb-0 py-3" style="font-size:.8rem;">
+            <li class="breadcrumb-item">
+                <a asp-controller="Home" asp-action="Index" class="text-muted text-decoration-none">Trang chủ</a>
+            </li>
+            <li class="breadcrumb-item active text-muted">Giỏ hàng</li>
+        </ol>
+    </div>
+</div>
+
+<div class="container-xl py-5">
+
+    <div class="d-flex align-items-center gap-3 mb-5">
+        <h1 class="section-heading mb-0">Giỏ hàng</h1>
+        @if (Model.TotalItems > 0)
+        {
+            <span class="cart-count-badge">@Model.TotalItems sản phẩm</span>
+        }
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 rounded-0" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 rounded-0" role="alert">
+            <i class="bi bi-exclamation-circle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (!Model.Items.Any())
+    {
+        <div class="cart-empty text-center py-5">
+            <i class="bi bi-bag display-1 text-muted"></i>
+            <h4 class="mt-4 fw-light">Giỏ hàng của bạn đang trống</h4>
+            <p class="text-muted mb-4">Hãy khám phá các sản phẩm nội thất cao cấp của chúng tôi.</p>
+            <a asp-controller="Product" asp-action="Index" class="btn-outline-accent">
+                Tiếp tục mua sắm <i class="bi bi-arrow-right ms-2"></i>
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-5">
+
+            <div class="col-12 col-lg-8">
+
+                <div class="cart-table-header d-none d-md-grid">
+                    <span>
+                        <input type="checkbox" id="checkAll" class="form-check-input me-2" />
+                        Sản phẩm
+                    </span>
+                    <span class="text-center">Đơn giá</span>
+                    <span class="text-center">Số lượng</span>
+                    <span class="text-center">Thành tiền</span>
+                    <span></span>
+                </div>
+
+                @foreach (var item in Model.Items)
+                {
+                    <div class="cart-item"
+                         data-product-id="@item.ProductId"
+                         data-subtotal="@item.SubTotal">
+                        <div class="cart-item__product">
+                            <input type="checkbox" class="form-check-input item-check me-2"
+                                   data-price="@item.SubTotal" />
+                            <img src="@(item.ProductImage ?? "/images/defaults/no-image.jpg")"
+                                 alt="@item.ProductName" class="cart-item__img" />
+                            <div>
+                                <p class="cart-item__name">@item.ProductName</p>
+                                <p class="cart-item__price-mobile d-md-none">
+                                    @item.UnitPrice.ToString("N0") ₫
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="cart-item__price d-none d-md-flex">
+                            @item.UnitPrice.ToString("N0") ₫
+                        </div>
+
+                        <div class="cart-item__qty">
+                            <form asp-action="Update" asp-controller="Cart" method="post"
+                                  class="qty-form d-flex align-items-center">
+                                <input type="hidden" name="productId" value="@item.ProductId" />
+                                <div class="qty-control">
+                                    <button type="button" class="qty-btn"
+                                            onclick="decreaseQty(this)">
+                                        −
+                                    </button>
+                                    <input type="number" name="quantity" value="@item.Quantity"
+                                           min="1" max="99" class="qty-input"
+                                           onchange="this.closest('form').submit()" />
+                                    <button type="button" class="qty-btn"
+                                            onclick="increaseQty(this)">
+                                        +
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="cart-item__subtotal d-none d-md-flex">
+                            @item.SubTotal.ToString("N0") ₫
+                        </div>
+
+                        <div class="cart-item__remove">
+                            <form asp-action="Remove" asp-controller="Cart" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="productId" value="@item.ProductId" />
+                                <button type="submit" class="remove-btn" title="Xóa"
+                                        onclick="return confirm('Xóa sản phẩm này khỏi giỏ hàng?')">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+
+                <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-3">
+                    <a asp-controller="Product" asp-action="Index" class="continue-link">
+                        <i class="bi bi-arrow-left me-2"></i>Tiếp tục mua sắm
+                    </a>
+                    <form asp-action="Clear" asp-controller="Cart" method="post">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="clear-cart-btn"
+                                onclick="return confirm('Xóa toàn bộ giỏ hàng?')">
+                            <i class="bi bi-trash me-1"></i>Xóa tất cả
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-4">
+                <div class="cart-summary">
+                    <h5 class="cart-summary__title">Tóm tắt đơn hàng</h5>
+
+                    <div class="cart-summary__row">
+                        <span>Tạm tính (<span id="selectedCount">@Model.TotalItems</span> sản phẩm)</span>
+                        <span id="selectedTotal">@Model.TotalAmount.ToString("N0") ₫</span>
+                    </div>
+                    <div class="cart-summary__row">
+                        <span>Phí vận chuyển</span>
+                        <span class="text-success">Miễn phí</span>
+                    </div>
+                    <div class="cart-summary__row cart-summary__row--total">
+                        <span>Tổng cộng</span>
+                        <span id="grandTotal">@Model.TotalAmount.ToString("N0") ₫</span>
+                    </div>
+
+                    <a id="checkoutBtn" href="/Order/Checkout" class="btn-checkout w-100 mt-4 d-block text-center">
+                        Tiến hành đặt hàng <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+
+                    <div class="cart-summary__secure mt-3 text-center">
+                        <i class="bi bi-shield-lock me-1"></i>
+                        <small class="text-muted">Thanh toán an toàn & bảo mật</small>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="~/js/product-filter.js" asp-append-version="true"></script>
 }
