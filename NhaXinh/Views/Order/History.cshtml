@@ -1,5 +1,133 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@section Styles {
+<link rel="stylesheet" href="~/css/pages/order-history.css" asp-append-version="true" />
+}
+
+@model NhaXinh.ViewModels.Order.OrderHistoryViewModel
+@using NhaXinh.Models
 @{
+    ViewData["Title"] = "Lịch sử đơn hàng";
+}
+
+<div class="breadcrumb-bar">
+    <div class="container-xl">
+        <ol class="breadcrumb mb-0 py-3" style="font-size:.8rem;">
+            <li class="breadcrumb-item">
+                <a asp-controller="Home" asp-action="Index" class="text-muted text-decoration-none">Trang chủ</a>
+            </li>
+            <li class="breadcrumb-item active" style="color:var(--clr-accent);">Lịch sử đơn hàng</li>
+        </ol>
+    </div>
+</div>
+
+<div class="container-xl py-5">
+    <h1 class="section-heading mb-5">Lịch sử đơn hàng</h1>
+
+    @if (!Model.Orders.Any())
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-bag-x display-1 text-muted"></i>
+            <h4 class="mt-4 fw-light">Bạn chưa có đơn hàng nào</h4>
+            <p class="text-muted mb-4">Hãy khám phá và mua sắm tại Nhà Xinh.</p>
+            <a asp-controller="Product" asp-action="Index" class="btn-outline-accent">
+                Mua sắm ngay <i class="bi bi-arrow-right ms-2"></i>
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="d-none d-md-block">
+            <table class="history-table w-100">
+                <thead>
+                    <tr>
+                        <th>Mã đơn hàng</th>
+                        <th>Ngày đặt</th>
+                        <th>Tổng tiền</th>
+                        <th>Thanh toán</th>
+                        <th>Trạng thái</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model.Orders)
+                    {
+                        <tr>
+                            <td>
+                                <span class="order-code-text">@order.OrderCode</span>
+                            </td>
+                            <td class="text-muted" style="font-size:.85rem;">
+                                @order.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                            </td>
+                            <td>
+                                <strong>@order.TotalAmount.ToString("N0") ₫</strong>
+                            </td>
+                            <td style="font-size:.83rem;">
+                                @if (order.PaymentMethod == PaymentMethod.COD)
+                                {
+                                    <span><i class="bi bi-cash-coin me-1 text-success"></i>COD</span>
+                                }
+                                else
+                                {
+                                    <span><i class="bi bi-bank me-1 text-primary"></i>Chuyển khoản</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="order-status-badge order-status-badge--@order.Status.ToString().ToLower()">
+                                    @GetStatusLabel(order.Status)
+                                </span>
+                            </td>
+                            <td>
+                                <a asp-action="Detail" asp-route-id="@order.Id"
+                                   class="view-detail-link">Chi tiết</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-md-none d-flex flex-column gap-3">
+            @foreach (var order in Model.Orders)
+            {
+                <div class="history-card">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="order-code-text">@order.OrderCode</span>
+                        <span class="order-status-badge order-status-badge--@order.Status.ToString().ToLower()">
+                            @GetStatusLabel(order.Status)
+                        </span>
+                    </div>
+                    <p class="text-muted mb-1" style="font-size:.82rem;">
+                        <i class="bi bi-calendar3 me-1"></i>@order.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                    </p>
+                    <p class="mb-2" style="font-size:.85rem;">
+                        @if (order.PaymentMethod == PaymentMethod.COD)
+                        {
+                            <span><i class="bi bi-cash-coin me-1 text-success"></i>Thanh toán khi nhận hàng</span>
+                        }
+                        else
+                        {
+                            <span><i class="bi bi-bank me-1 text-primary"></i>Chuyển khoản ngân hàng</span>
+                        }
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong>@order.TotalAmount.ToString("N0") ₫</strong>
+                        <a asp-action="Detail" asp-route-id="@order.Id" class="view-detail-link">
+                            Xem chi tiết <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@functions {
+    string GetStatusLabel(NhaXinh.Models.OrderStatus status) => status switch
+    {
+        NhaXinh.Models.OrderStatus.Pending => "Chờ xác nhận",
+        NhaXinh.Models.OrderStatus.Confirmed => "Đã xác nhận",
+        NhaXinh.Models.OrderStatus.Shipping => "Đang giao",
+        NhaXinh.Models.OrderStatus.Delivered => "Đã giao",
+        NhaXinh.Models.OrderStatus.Cancelled => "Đã huỷ",
+        _ => "Không rõ"
+    };
 }
