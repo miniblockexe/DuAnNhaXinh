@@ -1,13 +1,155 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
 
-<html>
-<head>
-    <meta name="viewport" content="width=device-width" />
-    <title>@ViewBag.Title</title>
-</head>
-<body>
-    <div>
-        @RenderBody()
+@{
+    var cartCount = Context.Session.GetInt32("CartCount") ?? 0;
+    var currentPath = Context.Request.Path.Value ?? "";
+}
+
+<header class="nx-header">
+
+    <div class="nx-topbar">
+        <div class="container d-flex justify-content-between align-items-center">
+            <span class="nx-topbar__text">
+                <i class="bi bi-telephone me-1"></i> 0901 234 567
+                &nbsp;|&nbsp;
+                <i class="bi bi-envelope me-1"></i> hello@nhaxinh.vn
+            </span>
+            <span class="nx-topbar__text">
+                <i class="bi bi-clock me-1"></i> Thứ 2 – Thứ 7: 8:00 – 20:00
+            </span>
+        </div>
     </div>
-</body>
-</html>
+
+    <div class="nx-header__main">
+        <div class="container d-flex align-items-center justify-content-between">
+
+            <a class="nx-logo" asp-controller="Home" asp-action="Index">
+                <span class="nx-logo__text">Nhà Xinh</span>
+            </a>
+
+            <nav class="nx-nav d-none d-lg-flex">
+                <a class="nx-nav__link @(currentPath == "/" ? "active" : "")"
+                   asp-controller="Home" asp-action="Index">Trang chủ</a>
+                <a class="nx-nav__link @(currentPath.StartsWith("/Product") ? "active" : "")"
+                   asp-controller="Product" asp-action="Index">Sản phẩm</a>
+                <a class="nx-nav__link @(currentPath.StartsWith("/News") || currentPath.StartsWith("/tin-tuc") ? "active" : "")"
+                   asp-controller="News" asp-action="Index">Tin tức</a>
+                <a class="nx-nav__link @(currentPath.StartsWith("/Order/History") ? "active" : "")"
+                   asp-controller="Order" asp-action="History">Đơn hàng</a>
+            </nav>
+
+            <div class="nx-header__actions d-flex align-items-center gap-3">
+
+                <button class="nx-icon-btn" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#searchCollapse" aria-label="Tìm kiếm">
+                    <i class="bi bi-search"></i>
+                </button>
+
+                <a class="nx-icon-btn nx-cart-btn" asp-controller="Cart" asp-action="Index"
+                   aria-label="Giỏ hàng">
+                    <i class="bi bi-bag"></i>
+                    @if (cartCount > 0)
+                    {
+                        <span class="nx-badge">@cartCount</span>
+                    }
+                </a>
+
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    <div class="dropdown">
+                        <button class="nx-icon-btn" type="button"
+                                data-bs-toggle="dropdown" aria-label="Tài khoản">
+                            <i class="bi bi-person-circle"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end nx-dropdown">
+                            <li>
+                                <span class="dropdown-item-text nx-dropdown__name">
+                                    @UserManager.GetUserName(User)
+                                </span>
+                            </li>
+                            <li><hr class="dropdown-divider" /></li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="Account" asp-action="Profile">
+                                    <i class="bi bi-person me-2"></i>Hồ sơ
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="Order" asp-action="History">
+                                    <i class="bi bi-receipt me-2"></i>Đơn hàng
+                                </a>
+                            </li>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li><hr class="dropdown-divider" /></li>
+                                <li>
+                                    <a class="dropdown-item" asp-area="Admin"
+                                       asp-controller="Dashboard" asp-action="Index">
+                                        <i class="bi bi-grid me-2"></i>Quản trị
+                                    </a>
+                                </li>
+                            }
+                            <li><hr class="dropdown-divider" /></li>
+                            <li>
+                                <form asp-controller="Account" asp-action="Logout" method="post">
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Đăng xuất
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                }
+                else
+                {
+                    <a class="nx-btn-outline" asp-controller="Account" asp-action="Login">
+                        Đăng nhập
+                    </a>
+                }
+
+                <button class="nx-icon-btn d-lg-none" type="button"
+                        data-bs-toggle="offcanvas" data-bs-target="#mobileMenu"
+                        aria-label="Menu">
+                    <i class="bi bi-list fs-4"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="collapse nx-search-bar" id="searchCollapse">
+        <div class="container py-3">
+            <form asp-controller="Product" asp-action="Index" method="get"
+                  class="d-flex gap-2">
+                <input type="text" name="keyword" class="form-control nx-search-input"
+                       placeholder="Tìm kiếm sản phẩm nội thất..."
+                       value="@Context.Request.Query["keyword"]" />
+                <button type="submit" class="nx-btn-primary px-4">
+                    <i class="bi bi-search"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</header>
+
+<div class="offcanvas offcanvas-start nx-offcanvas" tabindex="-1" id="mobileMenu">
+    <div class="offcanvas-header">
+        <span class="nx-logo__text fs-4">Nhà Xinh</span>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+        <nav class="d-flex flex-column gap-1">
+            <a class="nx-offcanvas__link" asp-controller="Home" asp-action="Index">Trang chủ</a>
+            <a class="nx-offcanvas__link" asp-controller="Product" asp-action="Index">Sản phẩm</a>
+            <a class="nx-offcanvas__link" asp-controller="News" asp-action="Index">Tin tức</a>
+            <a class="nx-offcanvas__link" asp-controller="Order" asp-action="History">Đơn hàng</a>
+        </nav>
+        <hr />
+        @if (!SignInManager.IsSignedIn(User))
+        {
+            <a class="nx-btn-primary w-100 text-center" asp-controller="Account" asp-action="Login">
+                Đăng nhập
+            </a>
+        }
+    </div>
+</div>

@@ -1,13 +1,81 @@
-﻿<!DOCTYPE html>
+﻿@model NhaXinh.Models.Product
 
-<html>
-<head>
-    <meta name="viewport" content="width=device-width" />
-    <title>@ViewBag.Title</title>
-</head>
-<body>
-    <div>
-        @RenderBody()
+@{
+    bool hasDiscount = Model.DiscountPrice.HasValue && Model.DiscountPrice < Model.Price;
+    decimal displayPrice = hasDiscount ? Model.DiscountPrice!.Value : Model.Price;
+    string imageUrl = !string.IsNullOrEmpty(Model.MainImageUrl)
+        ? Model.MainImageUrl
+        : "/images/no-image.png";
+}
+
+<div class="nx-product-card">
+    @if (Model.IsFeatured)
+    {
+        <span class="nx-product-card__badge nx-product-card__badge--featured">Nổi bật</span>
+    }
+    @if (hasDiscount)
+    {
+        int pct = (int)(((Model.Price - displayPrice) / Model.Price) * 100);
+        <span class="nx-product-card__badge nx-product-card__badge--sale">-@pct%</span>
+    }
+
+    <a asp-controller="Product" asp-action="Detail" asp-route-slug="@Model.Slug"
+       class="nx-product-card__img-wrap">
+        <img src="@imageUrl" alt="@Model.Name" class="nx-product-card__img"
+             loading="lazy" />
+    </a>
+
+    <div class="nx-product-card__body">
+        @if (Model.Category != null)
+        {
+            <span class="nx-product-card__category">@Model.Category.Name</span>
+        }
+
+        <h3 class="nx-product-card__name">
+            <a asp-controller="Product" asp-action="Detail" asp-route-slug="@Model.Slug">
+                @Model.Name
+            </a>
+        </h3>
+
+        @if (!string.IsNullOrEmpty(Model.ShortDescription))
+        {
+            <p class="nx-product-card__desc">@Model.ShortDescription</p>
+        }
+
+        <div class="nx-product-card__price-wrap">
+            <span class="nx-product-card__price">
+                @displayPrice.ToString("N0") ₫
+            </span>
+            @if (hasDiscount)
+            {
+                <span class="nx-product-card__price-original">
+                    @Model.Price.ToString("N0") ₫
+                </span>
+            }
+        </div>
+
+        <div class="nx-product-card__actions">
+            <a asp-controller="Product" asp-action="Detail" asp-route-slug="@Model.Slug"
+               class="nx-btn-primary nx-product-card__btn-detail">
+                Xem chi tiết
+            </a>
+            @if (Model.StockQuantity > 0)
+            {
+                <form asp-controller="Cart" asp-action="AddToCart" method="post"
+                      class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="productId" value="@Model.Id" />
+                    <input type="hidden" name="quantity" value="1" />
+                    <button type="submit" class="nx-icon-btn nx-product-card__btn-cart"
+                            title="Thêm vào giỏ">
+                        <i class="bi bi-bag-plus"></i>
+                    </button>
+                </form>
+            }
+            else
+            {
+                <span class="nx-product-card__out-of-stock">Hết hàng</span>
+            }
+        </div>
     </div>
-</body>
-</html>
+</div>
