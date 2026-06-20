@@ -1,5 +1,202 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@using NhaXinh.Services.Interfaces
+@model DashboardStats
 @{
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/dashboard.css" asp-append-version="true" />
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)">
+            <div class="stat-card__body">
+                <div class="stat-card__value">@Model.TotalOrders</div>
+                <div class="stat-card__label">Tổng đơn hàng</div>
+            </div>
+            <div class="stat-card__icon"><i class="bi bi-cart3"></i></div>
+        </div>
+    </div>
+    @if (User.IsInRole("Admin"))
+    {
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card" style="background:linear-gradient(135deg,#10b981,#059669)">
+                <div class="stat-card__body">
+                    <div class="stat-card__value" style="font-size:1.5rem">@Model.TotalRevenue.ToString("N0")₫</div>
+                    <div class="stat-card__label">Doanh thu</div>
+                </div>
+                <div class="stat-card__icon"><i class="bi bi-cash-stack"></i></div>
+            </div>
+        </div>
+    }
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
+            <div class="stat-card__body">
+                <div class="stat-card__value">@Model.PendingOrders</div>
+                <div class="stat-card__label">Chờ xác nhận</div>
+            </div>
+            <div class="stat-card__icon"><i class="bi bi-clock-history"></i></div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)">
+            <div class="stat-card__body">
+                <div class="stat-card__value">@Model.ShippingOrders</div>
+                <div class="stat-card__label">Đang giao</div>
+            </div>
+            <div class="stat-card__icon"><i class="bi bi-truck"></i></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+
+    <div class="col-lg-8">
+        <div class="content-card">
+            <div class="content-card__head">
+                <span><i class="bi bi-list-check me-2 text-primary"></i>Đơn hàng gần đây</span>
+                <a asp-area="Admin" asp-controller="Order" asp-action="Index"
+                   class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:.78rem">
+                    Xem tất cả
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="table dash-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Mã đơn</th>
+                            <th>Khách hàng</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày đặt</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in Model.RecentOrders)
+                        {
+                            var badgeClass = order.Status switch
+                            {
+                                NhaXinh.Models.OrderStatus.Pending => "warning",
+                                NhaXinh.Models.OrderStatus.Confirmed => "info",
+                                NhaXinh.Models.OrderStatus.Shipping => "primary",
+                                NhaXinh.Models.OrderStatus.Delivered => "success",
+                                NhaXinh.Models.OrderStatus.Cancelled => "danger",
+                                _ => "secondary"
+                            };
+                            var statusLabel = order.Status switch
+                            {
+                                NhaXinh.Models.OrderStatus.Pending => "Chờ xác nhận",
+                                NhaXinh.Models.OrderStatus.Confirmed => "Đã xác nhận",
+                                NhaXinh.Models.OrderStatus.Shipping => "Đang giao",
+                                NhaXinh.Models.OrderStatus.Delivered => "Đã giao",
+                                NhaXinh.Models.OrderStatus.Cancelled => "Đã hủy",
+                                _ => "Không rõ"
+                            };
+                            <tr>
+                                <td>
+                                    <a asp-area="Admin" asp-controller="Order" asp-action="Detail"
+                                       asp-route-id="@order.Id" class="dash-order-code">
+                                        @order.OrderCode
+                                    </a>
+                                </td>
+                                <td>@order.ReceiverName</td>
+                                <td class="fw-semibold">@order.TotalAmount.ToString("N0")₫</td>
+                                <td><span class="dash-badge dash-badge--@badgeClass">@statusLabel</span></td>
+                                <td class="text-muted">@order.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    <a asp-area="Admin" asp-controller="Order" asp-action="Detail"
+                                       asp-route-id="@order.Id"
+                                       class="btn btn-sm btn-outline-secondary py-0 px-2">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                        @if (!Model.RecentOrders.Any())
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox d-block fs-3 mb-1 opacity-25"></i>
+                                    Chưa có đơn hàng nào
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 d-flex flex-column gap-3">
+
+        <div class="content-card">
+            <div class="content-card__head">
+                <span><i class="bi bi-pie-chart me-2 text-warning"></i>Phân loại đơn hàng</span>
+            </div>
+            <div class="order-status-list">
+                <div class="order-status-item">
+                    <div class="order-status-item__name">
+                        <span class="order-status-item__dot" style="background:#e6a817"></span>Chờ xác nhận
+                    </div>
+                    <span class="order-status-item__count">@Model.PendingOrders</span>
+                </div>
+                <div class="order-status-item">
+                    <div class="order-status-item__name">
+                        <span class="order-status-item__dot" style="background:#1565c0"></span>Đã xác nhận
+                    </div>
+                    <span class="order-status-item__count">@Model.ConfirmedOrders</span>
+                </div>
+                <div class="order-status-item">
+                    <div class="order-status-item__name">
+                        <span class="order-status-item__dot" style="background:#5e35b1"></span>Đang giao
+                    </div>
+                    <span class="order-status-item__count">@Model.ShippingOrders</span>
+                </div>
+                <div class="order-status-item">
+                    <div class="order-status-item__name">
+                        <span class="order-status-item__dot" style="background:#2e7d32"></span>Đã giao
+                    </div>
+                    <span class="order-status-item__count">@Model.DeliveredOrders</span>
+                </div>
+                <div class="order-status-item">
+                    <div class="order-status-item__name">
+                        <span class="order-status-item__dot" style="background:#c62828"></span>Đã hủy
+                    </div>
+                    <span class="order-status-item__count">@Model.CancelledOrders</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="content-card__head">
+                <span><i class="bi bi-exclamation-triangle me-2 text-danger"></i>Sắp hết hàng</span>
+            </div>
+            @{
+                var lowStock = ViewBag.LowStockProducts as List<NhaXinh.Models.Product> ?? new();
+            }
+            @if (!lowStock.Any())
+            {
+                <p class="text-muted mb-0 small px-3 py-3">
+                    <i class="bi bi-check-circle me-1 text-success"></i>
+                    Không có sản phẩm nào sắp hết.
+                </p>
+            }
+            else
+            {
+                <div>
+                    @foreach (var p in lowStock)
+                    {
+                        <div class="low-stock-item">
+                            <span class="low-stock-item__name" title="@p.Name">@p.Name</span>
+                            <span class="low-stock-badge">@p.StockQuantity</span>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+    </div>
+</div>

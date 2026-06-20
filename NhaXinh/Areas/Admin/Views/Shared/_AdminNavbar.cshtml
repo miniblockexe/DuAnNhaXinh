@@ -1,0 +1,106 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    ApplicationUser? currentUser = null;
+    if (SignInManager.IsSignedIn(User))
+    {
+        currentUser = await UserManager.GetUserAsync(User);
+    }
+
+    string displayName = currentUser?.FullName?.Trim() is { Length: > 0 } fn
+        ? fn
+        : (currentUser?.UserName ?? "Admin");
+
+    string avatarUrl = currentUser?.AvatarUrl is { Length: > 0 } av
+        ? av
+        : "";
+
+    string controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    string? pageTitle = ViewData["PageTitle"] as string ?? ViewData["Title"] as string;
+}
+
+<header class="adm-navbar" id="admNavbar">
+    <div class="adm-navbar__left">
+
+        <button class="adm-navbar__toggle" id="sidebarToggleBtn" type="button"
+                aria-label="Toggle sidebar">
+            <i class="bi bi-list"></i>
+        </button>
+
+        <nav class="adm-breadcrumb" aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                        <i class="bi bi-house"></i>
+                    </a>
+                </li>
+                @if (!string.IsNullOrEmpty(controller) && controller != "Dashboard")
+                {
+                    <li class="breadcrumb-item">@controller</li>
+                }
+                @if (!string.IsNullOrEmpty(pageTitle))
+                {
+                    <li class="breadcrumb-item active">@pageTitle</li>
+                }
+            </ol>
+        </nav>
+    </div>
+
+    <div class="adm-navbar__right">
+
+        <a class="adm-navbar__icon-btn d-none d-md-inline-flex"
+           asp-area="" asp-controller="Home" asp-action="Index"
+           target="_blank" title="Xem website">
+            <i class="bi bi-globe2"></i>
+        </a>
+
+        <button class="adm-navbar__icon-btn" type="button" title="Thông báo">
+            <i class="bi bi-bell"></i>
+        </button>
+
+        <div class="dropdown">
+            <button class="adm-user-btn" type="button"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                @if (!string.IsNullOrEmpty(avatarUrl))
+                {
+                    <img src="@avatarUrl" alt="@displayName" class="adm-user-avatar" />
+                }
+                else
+                {
+                    <span class="adm-user-initials">
+                        @(displayName.Length > 0 ? displayName[0].ToString().ToUpper() : "A")
+                    </span>
+                }
+                <span class="adm-user-name d-none d-md-inline">@displayName</span>
+                <i class="bi bi-chevron-down adm-user-chevron"></i>
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-end adm-dropdown">
+                <li>
+                    <div class="adm-dropdown__header">
+                        <strong>@displayName</strong>
+                        <small>@(currentUser?.Email ?? "")</small>
+                    </div>
+                </li>
+                <li><hr class="dropdown-divider my-1" /></li>
+                <li>
+                    <a class="dropdown-item adm-dropdown__item"
+                       asp-area="" asp-controller="Account" asp-action="Profile">
+                        <i class="bi bi-person"></i> Hồ sơ cá nhân
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider my-1" /></li>
+                <li>
+                    <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="dropdown-item adm-dropdown__item text-danger">
+                            <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</header>

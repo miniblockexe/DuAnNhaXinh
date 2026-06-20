@@ -1,5 +1,95 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@using NhaXinh.Models
+@model Product
 @{
+    ViewData["Title"] = "Xóa sản phẩm";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
+
+<div class="d-flex align-items-center gap-2 mb-3">
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <h5 class="fw-bold mb-0">Xóa sản phẩm</h5>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="content-card p-4 text-center">
+
+            <div class="mb-3">
+                @if (!string.IsNullOrEmpty(Model.MainImageUrl))
+                {
+                    <img src="@Model.MainImageUrl" alt="@Model.Name"
+                         class="rounded" style="width:120px;height:120px;object-fit:cover;" />
+                }
+                else
+                {
+                    <div class="bg-light rounded d-inline-flex align-items-center justify-content-center"
+                         style="width:120px;height:120px;">
+                        <i class="bi bi-image text-muted fs-1"></i>
+                    </div>
+                }
+            </div>
+
+            <div class="alert alert-danger py-2">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                Bạn có chắc chắn muốn xóa sản phẩm này không?
+            </div>
+
+            <h5 class="fw-bold">@Model.Name</h5>
+
+            <table class="table table-sm table-borderless text-start mt-3">
+                <tr>
+                    <td class="text-muted" style="width:40%">Danh mục</td>
+                    <td>@Model.Category?.Name</td>
+                </tr>
+                <tr>
+                    <td class="text-muted">Giá gốc</td>
+                    <td>@Model.Price.ToString("N0")₫</td>
+                </tr>
+                @if (Model.DiscountPrice.HasValue)
+                {
+                    <tr>
+                        <td class="text-muted">Giá KM</td>
+                        <td class="text-danger">@Model.DiscountPrice.Value.ToString("N0")₫</td>
+                    </tr>
+                }
+                <tr>
+                    <td class="text-muted">Tồn kho</td>
+                    <td>@Model.StockQuantity</td>
+                </tr>
+                <tr>
+                    <td class="text-muted">Trạng thái</td>
+                    <td>
+                        @if (Model.IsActive)
+                        {
+                            <span class="badge bg-success">Đang bán</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Ẩn</span>
+                        }
+                    </td>
+                </tr>
+            </table>
+
+            <p class="text-muted small">
+                <i class="bi bi-info-circle me-1"></i>
+                Hành động này không thể hoàn tác. Ảnh sản phẩm cũng sẽ bị xóa.
+            </p>
+
+            <div class="d-flex gap-2 justify-content-center mt-3">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-lg me-1"></i>Hủy
+                </a>
+                <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>Xác nhận xóa
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>

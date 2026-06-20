@@ -1,0 +1,98 @@
+﻿@{
+    var area = ViewContext.RouteData.Values["area"]?.ToString() ?? "";
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var action = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+
+    bool IsActive(string ctrl, string? act = null)
+        => controller.Equals(ctrl, StringComparison.OrdinalIgnoreCase)
+           && (act == null || action.Equals(act, StringComparison.OrdinalIgnoreCase));
+}
+
+<aside class="adm-sidebar" id="admSidebar">
+
+    <div class="adm-sidebar__brand">
+        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index"
+           class="adm-brand-link">
+            <i class="bi bi-house-heart-fill adm-brand-icon"></i>
+            <span class="adm-brand-text">Nhà Xinh</span>
+        </a>
+        <button class="adm-sidebar__toggle-btn d-lg-none"
+                id="sidebarCloseBtn" type="button" aria-label="Đóng menu">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+
+    <nav class="adm-sidebar__nav">
+
+        <div class="adm-nav-section">
+            <span class="adm-nav-label">Tổng quan</span>
+            <a class="adm-nav-link @(IsActive("Dashboard") ? "active" : "")"
+               asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard</span>
+            </a>
+        </div>
+
+        <div class="adm-nav-section">          
+            @if (User.IsInRole("Admin"))
+            {
+                <span class="adm-nav-label">Danh mục</span>
+                <a class="adm-nav-link @(IsActive("Product") ? "active" : "")"
+                   asp-area="Admin" asp-controller="Product" asp-action="Index">
+                    <i class="bi bi-box-seam"></i>
+                    <span>Sản phẩm</span>
+                </a>
+                <a class="adm-nav-link @(IsActive("Category") ? "active" : "")"
+                   asp-area="Admin" asp-controller="Category" asp-action="Index">
+                    <i class="bi bi-tag"></i>
+                    <span>Danh mục</span>
+                </a>
+                <a class="adm-nav-link @(IsActive("Banner") ? "active" : "")"
+                   asp-area="Admin" asp-controller="Banner" asp-action="Index">
+                    <i class="bi bi-image"></i>
+                    <span>Banner</span>
+                </a>
+                <a class="adm-nav-link @(IsActive("News") ? "active" : "")"
+                   asp-area="Admin" asp-controller="News" asp-action="Index">
+                    <i class="bi bi-newspaper"></i>
+                    <span>Tin tức</span>
+                </a>
+            }
+        </div>
+
+        <div class="adm-nav-section">
+            <span class="adm-nav-label">Bán hàng</span>
+            <a class="adm-nav-link @(IsActive("Order") ? "active" : "")"
+               asp-area="Admin" asp-controller="Order" asp-action="Index">
+                <i class="bi bi-receipt"></i>
+                <span>Đơn hàng</span>
+            </a>
+        </div>
+
+        <div class="adm-nav-section">
+            <span class="adm-nav-label">Hệ thống</span>
+            @if (User.IsInRole("Admin"))
+            {
+                <a class="adm-nav-link @(IsActive("User") ? "active" : "")"
+                   asp-area="Admin" asp-controller="User" asp-action="Index">
+                    <i class="bi bi-people"></i>
+                    <span>Người dùng</span>
+                </a>
+            }
+            <a class="adm-nav-link" asp-area="" asp-controller="Home" asp-action="Index"
+               target="_blank">
+                <i class="bi bi-globe2"></i>
+                <span>Xem website</span>
+                <i class="bi bi-arrow-up-right ms-auto adm-nav-link__ext"></i>
+            </a>
+        </div>
+
+    </nav>
+
+    <div class="adm-sidebar__footer">
+        <span>Nhà Xinh Admin &copy; @DateTime.Now.Year</span>
+    </div>
+
+</aside>
+
+<div class="adm-sidebar-overlay" id="sidebarOverlay"></div>
