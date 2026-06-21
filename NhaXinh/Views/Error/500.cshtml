@@ -1,5 +1,47 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    ViewData["Title"] = "500 - Lỗi máy chủ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="nx-error-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6 text-center">
+
+                <div class="nx-error-card">
+                    <div class="nx-error-card__illustration">
+                        <div class="nx-error-card__code">500</div>
+                        <div class="nx-error-card__icon">
+                            <i class="bi bi-tools"></i>
+                        </div>
+                    </div>
+
+                    <h1 class="nx-error-card__title">Đã xảy ra lỗi máy chủ</h1>
+                    <p class="nx-error-card__desc">
+                        Xin lỗi vì sự bất tiện này. Chúng tôi đang gặp sự cố kỹ thuật
+                        và sẽ khắc phục trong thời gian sớm nhất. Vui lòng thử lại sau.
+                    </p>
+
+                    <div class="nx-error-card__actions">
+                        <a asp-controller="Home" asp-action="Index" class="nx-btn-primary">
+                            <i class="bi bi-house me-2"></i>Về trang chủ
+                        </a>
+                        <button onclick="location.reload()" class="nx-btn-outline">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Thử lại
+                        </button>
+                    </div>
+
+                    <p class="nx-error-card__hint">
+                        Hoặc
+                        <a href="javascript:history.back()">quay lại trang trước</a>
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/error.css" asp-append-version="true" />
 }
