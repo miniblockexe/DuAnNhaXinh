@@ -8,11 +8,6 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\css\vendor\" />
-    <Folder Include="wwwroot\images\banners\" />
-    <Folder Include="wwwroot\images\categories\" />
-    <Folder Include="wwwroot\images\defaults\" />
-    <Folder Include="wwwroot\images\news\" />
-    <Folder Include="wwwroot\images\products\" />
     <Folder Include="wwwroot\js\vendor\" />
   </ItemGroup>
 
