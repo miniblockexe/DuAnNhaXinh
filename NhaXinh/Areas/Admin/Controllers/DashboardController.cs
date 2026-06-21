@@ -26,5 +26,23 @@ namespace NhaXinh.Areas.Admin.Controllers
 
             return View(stats);
         }
+        [HttpGet]
+        public async Task<IActionResult> GetNotifications()
+        {
+            var orders = await _orderService.GetRecentPendingOrdersAsync(limit: 36);
+
+            return Json(new
+            {
+                count = orders.Count,
+                orders = orders.Select(o => new
+                {
+                    id = o.Id,
+                    orderCode = o.OrderCode,
+                    customerName = o.User?.FullName ?? "Khách hàng",
+                    total = $"{o.TotalAmount:N0}đ",
+                    createdAt = o.CreatedAt.ToString("dd/MM HH:mm")
+                })
+            });
+        }
     }
 }

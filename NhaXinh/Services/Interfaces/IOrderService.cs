@@ -33,6 +33,7 @@ namespace NhaXinh.Services.Interfaces
         Task<string> GenerateOrderCodeAsync();
 
         Task<DashboardStats> GetDashboardStatsAsync();
+        Task<List<Order>> GetRecentPendingOrdersAsync(int limit = 8);
     }
     public class DashboardStats
     {
