@@ -1,5 +1,142 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model NhaXinh.ViewModels.News.NewsDetailViewModel
+
 @{
+    var news = Model.News;
+    ViewData["Title"] = news.Title;
 }
+
+<section class="nx-page-hero">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb nx-breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a asp-controller="Home" asp-action="Index">
+                        <i class="bi bi-house me-1"></i>Trang chủ
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a asp-controller="News" asp-action="Index">Tin tức</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    @(news.Title.Length > 50 ? news.Title.Substring(0, 50) + "…" : news.Title)
+                </li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<div class="container py-5">
+    <div class="row g-5">
+
+        <div class="col-12 col-lg-8">
+            <article class="nx-article">
+
+                @if (!string.IsNullOrWhiteSpace(news.ThumbnailUrl))
+                {
+                    <div class="nx-article__cover">
+                        <img src="@news.ThumbnailUrl" alt="@news.Title" />
+                    </div>
+                }
+
+                <header class="nx-article__header">
+                    @if (news.IsFeatured)
+                    {
+                        <span class="nx-badge-featured">
+                            <i class="bi bi-star-fill me-1"></i>Nổi bật
+                        </span>
+                    }
+                    <h1 class="nx-article__title">@news.Title</h1>
+
+                    <div class="nx-article__meta">
+                        @if (!string.IsNullOrWhiteSpace(news.Author))
+                        {
+                            <span><i class="bi bi-person-fill me-1"></i>@news.Author</span>
+                        }
+                        @if (news.PublishedAt.HasValue)
+                        {
+                            <span>
+                                <i class="bi bi-calendar3 me-1"></i>
+                                @news.PublishedAt.Value.ToString("dd/MM/yyyy")
+                            </span>
+                        }
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(news.Summary))
+                    {
+                        <p class="nx-article__summary">@news.Summary</p>
+                    }
+                </header>
+
+                <div class="nx-article__content">
+                    @Html.Raw(news.Content)
+                </div>
+
+                <div class="nx-article__share">
+                    <span class="nx-article__share-label">
+                        <i class="bi bi-share me-1"></i>Chia sẻ bài viết:
+                    </span>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=@Uri.EscapeDataString(Context.Request.Scheme + "://" + Context.Request.Host + Context.Request.Path)"
+                       target="_blank" rel="noopener" class="nx-share-btn nx-share-btn--fb">
+                        <i class="bi bi-facebook"></i> Facebook
+                    </a>
+                </div>
+
+                <div class="mt-4">
+                    <a asp-controller="News" asp-action="Index" class="nx-btn-back">
+                        <i class="bi bi-arrow-left me-1"></i>Quay lại danh sách tin tức
+                    </a>
+                </div>
+            </article>
+        </div>
+
+        <aside class="col-12 col-lg-4">
+            @if (Model.RelatedNews.Any())
+            {
+                <div class="nx-sidebar-card">
+                    <h3 class="nx-sidebar-card__title">
+                        <i class="bi bi-journal-richtext me-2"></i>Bài viết liên quan
+                    </h3>
+                    <div class="nx-related-list">
+                        @foreach (var r in Model.RelatedNews)
+                        {
+                            <a asp-controller="News" asp-action="Detail"
+                               asp-route-slug="@r.Slug" class="nx-related-item">
+                                @if (!string.IsNullOrWhiteSpace(r.ThumbnailUrl))
+                                {
+                                    <img src="@r.ThumbnailUrl" alt="@r.Title"
+                                         class="nx-related-item__img" loading="lazy" />
+                                }
+                                else
+                                {
+                                    <div class="nx-related-item__img-placeholder">
+                                        <i class="bi bi-image"></i>
+                                    </div>
+                                }
+                                <div class="nx-related-item__info">
+                                    <p class="nx-related-item__title">@r.Title</p>
+                                    @if (r.PublishedAt.HasValue)
+                                    {
+                                        <span class="nx-related-item__date">
+                                            <i class="bi bi-calendar3 me-1"></i>
+                                            @r.PublishedAt.Value.ToString("dd/MM/yyyy")
+                                        </span>
+                                    }
+                                </div>
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+
+            <div class="nx-sidebar-cta mt-4">
+                <i class="bi bi-house-heart nx-sidebar-cta__icon"></i>
+                <h4 class="nx-sidebar-cta__title">Khám phá nội thất</h4>
+                <p class="nx-sidebar-cta__text">Tìm sản phẩm phù hợp cho không gian của bạn.</p>
+                <a asp-controller="Product" asp-action="Index" class="nx-btn-gold w-100 text-center">
+                    <i class="bi bi-grid me-1"></i>Xem sản phẩm
+                </a>
+            </div>
+        </aside>
+
+    </div>
+</div>

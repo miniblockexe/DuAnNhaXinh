@@ -1,5 +1,221 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model NhaXinh.Models.Order
+@using NhaXinh.Models
+
 @{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
+
+@functions {
+    static string StatusBadge(OrderStatus s) => s switch
+    {
+        OrderStatus.Pending => "bg-warning text-dark",
+        OrderStatus.Confirmed => "bg-info text-dark",
+        OrderStatus.Shipping => "bg-primary",
+        OrderStatus.Delivered => "bg-success",
+        OrderStatus.Cancelled => "bg-danger",
+        _ => "bg-secondary"
+    };
+
+    static string StatusLabel(OrderStatus s) => s switch
+    {
+        OrderStatus.Pending => "Chờ xác nhận",
+        OrderStatus.Confirmed => "Đã xác nhận",
+        OrderStatus.Shipping => "Đang giao",
+        OrderStatus.Delivered => "Hoàn thành",
+        OrderStatus.Cancelled => "Đã huỷ",
+        _ => s.ToString()
+    };
+}
+
+<div class="d-flex align-items-center mb-4">
+    <a asp-action="Index" class="btn btn-outline-secondary me-3">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <h4 class="mb-0 fw-bold">
+        <i class="bi bi-receipt me-2 text-primary"></i>
+        Đơn hàng <span class="text-primary">@Model.OrderCode</span>
+    </h4>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-4">
+
+    <div class="col-lg-8">
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white fw-semibold">
+                <i class="bi bi-box-seam me-2 text-primary"></i>Sản phẩm đã đặt
+            </div>
+            <div class="card-body p-0">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th class="text-center" style="width:80px">SL</th>
+                            <th class="text-end" style="width:130px">Đơn giá</th>
+                            <th class="text-end" style="width:130px">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.OrderDetails)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        @{
+                                            var thumb = item.Product?.MainImageUrl
+                                            ?? item.Product?.ProductImages
+                                            .OrderBy(pi => pi.DisplayOrder)
+                                            .FirstOrDefault()?.ImageUrl;
+                                        }
+                                        @if (thumb != null)
+                                        {
+                                            <img src="@thumb" alt="@item.Product?.Name"
+                                                 style="width:44px;height:44px;object-fit:cover;border-radius:6px;" />
+                                        }
+                                        <span>@item.Product?.Name</span>
+                                    </div>
+                                </td>
+                                <td class="text-center">@item.Quantity</td>
+                                <td class="text-end">@item.UnitPrice.ToString("N0") ₫</td>
+                                <td class="text-end fw-semibold">@item.SubTotal.ToString("N0") ₫</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <td colspan="3" class="text-end fw-bold">Tổng cộng:</td>
+                            <td class="text-end fw-bold fs-5 text-primary">
+                                @Model.TotalAmount.ToString("N0") ₫
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.Note))
+        {
+            <div class="card shadow-sm">
+                <div class="card-header bg-white fw-semibold">
+                    <i class="bi bi-chat-left-text me-2 text-primary"></i>Ghi chú
+                </div>
+                <div class="card-body">
+                    <p class="mb-0 text-muted">@Model.Note</p>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="col-lg-4">
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white fw-semibold">
+                <i class="bi bi-person me-2 text-primary"></i>Thông tin khách hàng
+            </div>
+            <div class="card-body">
+                <p class="mb-2"><strong>Họ tên:</strong> @Model.ReceiverName</p>
+                <p class="mb-2"><strong>SĐT:</strong> @Model.ReceiverPhone</p>
+                <p class="mb-2"><strong>Địa chỉ:</strong> @Model.ShippingAddress</p>
+                <p class="mb-0">
+                    <strong>Thanh toán:</strong>
+                    @(Model.PaymentMethod == PaymentMethod.COD
+                        ? "COD – Thanh toán khi nhận"
+                        : "Chuyển khoản ngân hàng")
+                </p>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white fw-semibold">
+                <i class="bi bi-activity me-2 text-primary"></i>Trạng thái đơn hàng
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <span class="badge @StatusBadge(Model.Status) fs-6 px-3 py-2">
+                        @StatusLabel(Model.Status)
+                    </span>
+                </div>
+                <p class="small text-muted mb-3">
+                    Tạo lúc: @Model.CreatedAt.ToString("HH:mm dd/MM/yyyy")<br />
+                    Cập nhật: @Model.UpdatedAt.ToString("HH:mm dd/MM/yyyy")
+                </p>
+
+                @if (Model.Status != OrderStatus.Delivered && Model.Status != OrderStatus.Cancelled)
+                {
+                    <hr />
+                    <p class="fw-semibold mb-2">Cập nhật trạng thái:</p>
+                    <form asp-action="UpdateStatus" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="orderId" value="@Model.Id" />
+                        <div class="mb-2">
+                            <select name="newStatus" class="form-select form-select-sm">
+                                @foreach (OrderStatus s in Enum.GetValues(typeof(OrderStatus)))
+                                {
+                                    if (s != Model.Status)
+                                    {
+                                        <option value="@((int)s)">@StatusLabel(s)</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm w-100">
+                            <i class="bi bi-arrow-repeat me-1"></i> Cập nhật
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-white fw-semibold">
+                <i class="bi bi-clock-history me-2 text-primary"></i>Tiến trình
+            </div>
+            <div class="card-body">
+                @{
+                    var steps = new[]
+                    {
+                (OrderStatus.Pending,   "bi-hourglass-split", "Chờ xác nhận"),
+                (OrderStatus.Confirmed, "bi-check-circle",    "Xác nhận"),
+                (OrderStatus.Shipping,  "bi-truck",           "Đang giao"),
+                (OrderStatus.Delivered, "bi-house-check",     "Hoàn thành"),
+                };
+                }
+                @foreach (var (status, icon, label) in steps)
+                {
+                    bool isCurrentOrPast = (int)Model.Status >= (int)status
+                    && Model.Status != OrderStatus.Cancelled;
+                    bool isCurrent = Model.Status == status;
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="bi @icon fs-5 @(isCurrentOrPast ? "text-success" : "text-muted")"></i>
+                        <span class="@(isCurrent ? "fw-semibold" : "") @(isCurrentOrPast ? "" : "text-muted")">
+                            @label @(isCurrent ? "← hiện tại" : "")
+                        </span>
+                    </div>
+                }
+                @if (Model.Status == OrderStatus.Cancelled)
+                {
+                    <div class="d-flex align-items-center gap-2 text-danger">
+                        <i class="bi bi-x-circle fs-5"></i>
+                        <span class="fw-semibold">Đã huỷ</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+    </div>
+</div>

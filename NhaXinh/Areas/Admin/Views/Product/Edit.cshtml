@@ -1,5 +1,227 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@using NhaXinh.Models
+@model Product
 @{
+    ViewData["Title"] = "Sửa sản phẩm";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    var categories = ViewBag.Categories as List<Category> ?? new();
 }
+
+<div class="d-flex align-items-center gap-2 mb-3">
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <h5 class="fw-bold mb-0">Sửa sản phẩm</h5>
+</div>
+
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+    <input asp-for="Id" type="hidden" />
+    <input asp-for="MainImageUrl" type="hidden" />
+    <input type="hidden" name="existingImageUrl" value="@Model.MainImageUrl" />
+    <input asp-for="CreatedAt" type="hidden" />
+    <input asp-for="ViewCount" type="hidden" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
+
+    <div class="row g-3">
+
+        <div class="col-lg-8">
+            <div class="content-card p-4 mb-3">
+                <h6 class="fw-semibold mb-3">Thông tin cơ bản</h6>
+
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label fw-medium">Tên sản phẩm <span class="text-danger">*</span></label>
+                    <input asp-for="Name" class="form-control" id="nameInput" />
+                    <span asp-validation-for="Name" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Slug" class="form-label fw-medium">Slug (URL)</label>
+                    <input asp-for="Slug" class="form-control" id="slugInput" data-edit-mode="1" />
+                    <span asp-validation-for="Slug" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ShortDescription" class="form-label fw-medium">Mô tả ngắn</label>
+                    <textarea asp-for="ShortDescription" class="form-control" rows="2"></textarea>
+                </div>
+
+                <div class="mb-0">
+                    <label asp-for="Description" class="form-label fw-medium">Mô tả chi tiết</label>
+                    <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+                </div>
+            </div>
+
+            <div class="content-card p-4">
+                <h6 class="fw-semibold mb-3">Giá & Tồn kho</h6>
+                <div class="row g-3">
+                    <div class="col-sm-4">
+                        <label asp-for="Price" class="form-label fw-medium">Giá gốc (₫) <span class="text-danger">*</span></label>
+                        <input asp-for="Price" type="number" min="0" class="form-control" />
+                        <span asp-validation-for="Price" class="text-danger small"></span>
+                    </div>
+                    <div class="col-sm-4">
+                        <label asp-for="DiscountPrice" class="form-label fw-medium">Giá khuyến mãi (₫)</label>
+                        <input asp-for="DiscountPrice" type="number" min="0" class="form-control" />
+                        <span asp-validation-for="DiscountPrice" class="text-danger small"></span>
+                    </div>
+                    <div class="col-sm-4">
+                        <label asp-for="StockQuantity" class="form-label fw-medium">Tồn kho <span class="text-danger">*</span></label>
+                        <input asp-for="StockQuantity" type="number" min="0" class="form-control" />
+                        <span asp-validation-for="StockQuantity" class="text-danger small"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+
+            <div class="content-card p-4 mb-3">
+                <h6 class="fw-semibold mb-3">Ảnh đại diện</h6>
+
+                <div class="mb-2 text-center">
+                    @if (!string.IsNullOrEmpty(Model.MainImageUrl))
+                    {
+                        <img id="previewImg" src="@Model.MainImageUrl" alt="@Model.Name"
+                             class="img-fluid rounded border"
+                             style="max-height:200px;object-fit:cover;width:100%;" />
+                    }
+                    else
+                    {
+                        <img id="previewImg" src="#" alt="Preview"
+                             class="img-fluid rounded border d-none"
+                             style="max-height:200px;object-fit:cover;width:100%;" />
+                        <div id="noImgPlaceholder" class="bg-light rounded border d-flex align-items-center
+                             justify-content-center text-muted" style="height:150px;">
+                            <div class="text-center">
+                                <i class="bi bi-image fs-2"></i>
+                                <div class="small mt-1">Chưa có ảnh</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <input type="file" name="imageFile" id="imageFile" accept="image/*"
+                       data-preview="#previewImg" data-preview-hide="#noImgPlaceholder"
+                       class="form-control form-control-sm" />
+                <div class="form-text">Chọn ảnh mới để thay ảnh hiện tại.</div>
+            </div>
+
+            <div class="content-card p-4 mb-3">
+                <h6 class="fw-semibold mb-3">Ảnh phụ</h6>
+
+                @if (Model.ProductImages != null && Model.ProductImages.Any())
+                {
+                    <div class="row g-2 mb-3">
+                        @foreach (var img in Model.ProductImages.OrderBy(i => i.DisplayOrder))
+                        {
+                            <div class="col-4">
+                                <div class="position-relative border rounded overflow-hidden" style="padding-top:75%;">
+                                    <img src="@img.ImageUrl" alt="Ảnh phụ"
+                                         class="position-absolute top-0 start-0 w-100 h-100"
+                                         style="object-fit:cover;" />
+                                    <button type="button"
+                                            onclick="if(confirm('Xóa ảnh này?')) document.getElementById('deleteImg-@img.Id').submit()"
+                                            class="btn btn-danger btn-sm p-0 px-1 position-absolute top-0 end-0 m-1"
+                                            title="Xóa ảnh">
+                                        <i class="bi bi-x-lg" style="font-size:.7rem;"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted small mb-2">Chưa có ảnh phụ nào.</p>
+                }
+
+                <label class="form-label fw-medium small mb-1">Thêm ảnh phụ mới</label>
+                <input type="file" name="subImages" id="subImages" accept="image/*" multiple
+                       class="form-control form-control-sm" />
+                <div class="form-text">Có thể chọn nhiều ảnh cùng lúc.</div>
+
+                <div class="row g-2 mt-2" id="subPreviewList"></div>
+            </div>
+
+            <div class="content-card p-4 mb-3">
+                <h6 class="fw-semibold mb-3">Phân loại</h6>
+                <div class="mb-3">
+                    <label asp-for="CategoryId" class="form-label fw-medium">Danh mục <span class="text-danger">*</span></label>
+                    <select asp-for="CategoryId" class="form-select">
+                        <option value="">-- Chọn danh mục --</option>
+                        @foreach (var c in categories)
+                        {
+                            <option value="@c.Id" selected="@(Model.CategoryId == c.Id)">@c.Name</option>
+                        }
+                    </select>
+                    <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="content-card p-4">
+                <h6 class="fw-semibold mb-3">Tuỳ chọn</h6>
+                <div class="form-check form-switch mb-2">
+                    <input asp-for="IsFeatured" class="form-check-input" type="checkbox" />
+                    <label asp-for="IsFeatured" class="form-check-label">Sản phẩm nổi bật</label>
+                </div>
+                <div class="form-check form-switch">
+                    <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                    <label asp-for="IsActive" class="form-check-label">Đang bán</label>
+                </div>
+
+                <hr class="my-3" />
+                <div class="text-muted small">
+                    <div><i class="bi bi-eye me-1"></i>Lượt xem: @Model.ViewCount</div>
+                    <div><i class="bi bi-calendar3 me-1"></i>Tạo: @Model.CreatedAt.ToString("dd/MM/yyyy")</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 mt-3">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-lg me-1"></i>Lưu thay đổi
+        </button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Hủy</a>
+        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger ms-auto">
+            <i class="bi bi-trash me-1"></i>Xóa sản phẩm
+        </a>
+    </div>
+</form>
+
+@if (Model.ProductImages != null && Model.ProductImages.Any())
+{
+    @foreach (var img in Model.ProductImages.OrderBy(i => i.DisplayOrder))
+    {
+        <form id="deleteImg-@img.Id"
+              asp-action="DeleteSubImage"
+              method="post"
+              style="display:none;">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="imageId" value="@img.Id" />
+            <input type="hidden" name="productId" value="@Model.Id" />
+        </form>
+    }
+}
+
+<script>
+    document.getElementById('subImages')?.addEventListener('change', function () {
+        const preview = document.getElementById('subPreviewList');
+        preview.innerHTML = '';
+        Array.from(this.files).forEach(function (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const col = document.createElement('div');
+                col.className = 'col-4';
+                col.innerHTML =
+                    '<div class="border rounded overflow-hidden" style="padding-top:75%;position:relative;">' +
+                    '<img src="' + e.target.result + '" class="position-absolute top-0 start-0 w-100 h-100" style="object-fit:cover;" />' +
+                    '</div>';
+                preview.appendChild(col);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+</script>

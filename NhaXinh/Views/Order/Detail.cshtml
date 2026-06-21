@@ -1,0 +1,143 @@
+﻿@model NhaXinh.ViewModels.Order.OrderDetailViewModel
+@using NhaXinh.Models
+
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng #" + Model.Order.OrderCode;
+    var order = Model.Order;
+
+    string statusClass = order.Status switch
+    {
+        OrderStatus.Pending => "nx-badge--warning",
+        OrderStatus.Confirmed => "nx-badge--info",
+        OrderStatus.Shipping => "nx-badge--primary",
+        OrderStatus.Delivered => "nx-badge--success",
+        OrderStatus.Cancelled => "nx-badge--danger",
+        _ => "nx-badge--secondary"
+    };
+
+    string statusText = order.Status switch
+    {
+        OrderStatus.Pending => "Chờ xác nhận",
+        OrderStatus.Confirmed => "Đã xác nhận",
+        OrderStatus.Shipping => "Đang giao hàng",
+        OrderStatus.Delivered => "Đã giao thành công",
+        OrderStatus.Cancelled => "Đã huỷ",
+        _ => "Không xác định"
+    };
+}
+
+<section class="nx-order-detail">
+    <div class="container">
+
+        <nav class="nx-breadcrumb" aria-label="breadcrumb">
+            <a asp-controller="Home" asp-action="Index">Trang chủ</a>
+            <i class="bi bi-chevron-right"></i>
+            <a asp-controller="Order" asp-action="History">Đơn hàng của tôi</a>
+            <i class="bi bi-chevron-right"></i>
+            <span>@order.OrderCode</span>
+        </nav>
+
+        <div class="nx-order-detail__header">
+            <div>
+                <h1 class="nx-order-detail__title">Đơn hàng <span>#@order.OrderCode</span></h1>
+                <p class="nx-order-detail__date">
+                    Đặt lúc @order.CreatedAt.ToString("HH:mm — dd/MM/yyyy")
+                </p>
+            </div>
+            <span class="nx-badge @statusClass">@statusText</span>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="nx-card">
+                    <div class="nx-card__head">
+                        <i class="bi bi-bag me-2"></i>Sản phẩm đã đặt
+                    </div>
+                    <div class="nx-card__body p-0">
+                        @foreach (var item in order.OrderDetails)
+                        {
+                            <div class="nx-order-item">
+                                <div class="nx-order-item__img-wrap">
+                                    @if (!string.IsNullOrEmpty(item.ProductImage))
+                                    {
+                                        <img src="@item.ProductImage" alt="@item.ProductName"
+                                             class="nx-order-item__img"
+                                             onerror="this.src='/images/defaults/product.jpg'" />
+                                    }
+                                    else
+                                    {
+                                        <img src="/images/defaults/product.jpg" alt="@item.ProductName"
+                                             class="nx-order-item__img" />
+                                    }
+                                </div>
+                                <div class="nx-order-item__info">
+                                    <p class="nx-order-item__name">@item.ProductName</p>
+                                    <p class="nx-order-item__price">
+                                        @item.UnitPrice.ToString("N0")₫
+                                        <span class="nx-order-item__qty">× @item.Quantity</span>
+                                    </p>
+                                </div>
+                                <div class="nx-order-item__subtotal">
+                                    @item.SubTotal.ToString("N0")₫
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="nx-card__foot">
+                        <span>Tổng cộng</span>
+                        <strong class="nx-order-total">@order.TotalAmount.ToString("N0")₫</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+
+                <div class="nx-card mb-3">
+                    <div class="nx-card__head">
+                        <i class="bi bi-person me-2"></i>Thông tin nhận hàng
+                    </div>
+                    <div class="nx-card__body">
+                        <dl class="nx-dl">
+                            <dt>Người nhận</dt>
+                            <dd>@order.ReceiverName</dd>
+                            <dt>Số điện thoại</dt>
+                            <dd>@order.ReceiverPhone</dd>
+                            <dt>Địa chỉ</dt>
+                            <dd>@order.ShippingAddress</dd>
+                            @if (!string.IsNullOrEmpty(order.Note))
+                            {
+                                <dt>Ghi chú</dt>
+                                <dd>@order.Note</dd>
+                            }
+                        </dl>
+                    </div>
+                </div>
+
+                <div class="nx-card">
+                    <div class="nx-card__head">
+                        <i class="bi bi-credit-card me-2"></i>Thanh toán
+                    </div>
+                    <div class="nx-card__body">
+                        <dl class="nx-dl">
+                            <dt>Phương thức</dt>
+                            <dd>
+                                @(order.PaymentMethod == PaymentMethod.COD
+                                    ? "Thanh toán khi nhận hàng (COD)"
+                                    : "Chuyển khoản ngân hàng")
+                            </dd>
+                            <dt>Trạng thái</dt>
+                            <dd><span class="nx-badge @statusClass">@statusText</span></dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <a asp-controller="Order" asp-action="History"
+                   class="nx-btn-back mt-3 d-block text-center">
+                    <i class="bi bi-arrow-left me-1"></i> Về danh sách đơn hàng
+                </a>
+
+            </div>
+        </div>
+
+    </div>
+</section>

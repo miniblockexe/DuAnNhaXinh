@@ -1,5 +1,103 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model NhaXinh.ViewModels.Order.OrderDetailViewModel
+@using NhaXinh.Models
 @{
+    ViewData["Title"] = "Đặt hàng thành công";
+    var o = Model.Order;
 }
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/success.css" asp-append-version="true" />
+}
+
+<div class="container-xl py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+
+            <div class="success-card text-center">
+                <div class="success-icon-wrap mb-4">
+                    <i class="bi bi-check-circle-fill success-icon"></i>
+                </div>
+                <h2 class="section-heading mb-2">Đặt hàng thành công!</h2>
+                <p class="text-muted mb-1">Cảm ơn bạn đã tin tưởng Nhà Xinh.</p>
+                <p class="text-muted">
+                    Mã đơn hàng của bạn:
+                    <strong class="success-order-code">@o.OrderCode</strong>
+                </p>
+            </div>
+            <div class="success-info mt-4">
+                <h6 class="success-info__title">Thông tin giao hàng</h6>
+                <div class="success-info__row">
+                    <span>Người nhận</span>
+                    <span>@o.ReceiverName</span>
+                </div>
+                <div class="success-info__row">
+                    <span>Số điện thoại</span>
+                    <span>@o.ReceiverPhone</span>
+                </div>
+                <div class="success-info__row">
+                    <span>Địa chỉ</span>
+                    <span>@o.ShippingAddress</span>
+                </div>
+                @if (!string.IsNullOrEmpty(o.Note))
+                {
+                    <div class="success-info__row">
+                        <span>Ghi chú</span>
+                        <span>@o.Note</span>
+                    </div>
+                }
+                <div class="success-info__row">
+                    <span>Thanh toán</span>
+                    <span>
+                        @if (o.PaymentMethod == PaymentMethod.COD)
+                        {
+                            <span><i class="bi bi-cash-coin me-1 text-success"></i>Thanh toán khi nhận hàng</span>
+                        }
+                        else
+                        {
+                            <span><i class="bi bi-bank me-1 text-primary"></i>Chuyển khoản ngân hàng</span>
+                        }
+                    </span>
+                </div>
+                <div class="success-info__row success-info__row--total">
+                    <span>Tổng tiền</span>
+                    <span>@o.TotalAmount.ToString("N0") ₫</span>
+                </div>
+            </div>
+
+            <div class="success-status mt-4">
+                <div class="success-status__step active">
+                    <div class="success-status__dot"></div>
+                    <div>
+                        <p class="success-status__label">Đã tiếp nhận</p>
+                        <p class="success-status__time">@o.CreatedAt.ToString("HH:mm — dd/MM/yyyy")</p>
+                    </div>
+                </div>
+                <div class="success-status__line"></div>
+                <div class="success-status__step">
+                    <div class="success-status__dot"></div>
+                    <p class="success-status__label">Đang xác nhận</p>
+                </div>
+                <div class="success-status__line"></div>
+                <div class="success-status__step">
+                    <div class="success-status__dot"></div>
+                    <p class="success-status__label">Đang giao hàng</p>
+                </div>
+                <div class="success-status__line"></div>
+                <div class="success-status__step">
+                    <div class="success-status__dot"></div>
+                    <p class="success-status__label">Đã giao</p>
+                </div>
+            </div>
+
+            <div class="d-flex gap-3 mt-5 flex-wrap justify-content-center">
+                <a asp-controller="Order" asp-action="History" class="btn-outline-accent">
+                    <i class="bi bi-clock-history me-2"></i>Lịch sử đơn hàng
+                </a>
+                <a asp-controller="Home" asp-action="Index" class="btn-add-cart">
+                    <i class="bi bi-house me-2"></i>Về trang chủ
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>

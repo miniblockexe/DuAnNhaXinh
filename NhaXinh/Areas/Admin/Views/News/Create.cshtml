@@ -1,5 +1,122 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model NhaXinh.Models.News
+
 @{
+    ViewData["Title"] = "Thêm bài viết";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex align-items-center mb-4">
+    <a asp-action="Index" class="btn btn-outline-secondary me-3">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <h4 class="mb-0 fw-bold"><i class="bi bi-file-earmark-plus me-2 text-primary"></i>Thêm bài viết mới</h4>
+</div>
+
+<form asp-action="Create" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2"></div>
+
+    <div class="row g-4">
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label fw-semibold">Tiêu đề <span class="text-danger">*</span></label>
+                        <input asp-for="Title" class="form-control" placeholder="Nhập tiêu đề bài viết" id="titleInput" />
+                        <span asp-validation-for="Title" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Slug" class="form-label fw-semibold">
+                            Slug <small class="text-muted fw-normal">(để trống sẽ tự tạo)</small>
+                        </label>
+                        <input asp-for="Slug" class="form-control font-monospace" placeholder="tieu-de-bai-viet" id="slugInput" />
+                        <span asp-validation-for="Slug" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Summary" class="form-label fw-semibold">Tóm tắt</label>
+                        <textarea asp-for="Summary" class="form-control" rows="3"
+                                  placeholder="Mô tả ngắn hiện ở danh sách bài viết..."></textarea>
+                        <span asp-validation-for="Summary" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Content" class="form-label fw-semibold">Nội dung <span class="text-danger">*</span></label>
+                        <textarea asp-for="Content" class="form-control" rows="12"
+                                  placeholder="Nội dung HTML đầy đủ..."></textarea>
+                        <span asp-validation-for="Content" class="text-danger small"></span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+
+            <div class="card shadow-sm mb-3">
+                <div class="card-header fw-semibold py-2">
+                    <i class="bi bi-image me-1"></i> Ảnh đại diện
+                </div>
+                <div class="card-body">
+                    <input type="file" name="thumbnailFile" accept="image/*" class="form-control form-control-sm"
+                           onchange="previewImg(this,'imgPreview')" />
+                    <span class="text-danger small" id="thumbnailError">
+                        @Html.ValidationMessage("thumbnailFile")
+                    </span>
+                    <div class="mt-2">
+                        <img id="imgPreview" src="#" alt="Preview"
+                             class="d-none rounded border w-100"
+                             style="max-height:180px;object-fit:cover;" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-3">
+                <div class="card-header fw-semibold py-2">
+                    <i class="bi bi-info-circle me-1"></i> Thông tin
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="Author" class="form-label fw-semibold">Tác giả</label>
+                        <input asp-for="Author" class="form-control form-control-sm" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="PublishedAt" class="form-label fw-semibold">Ngày đăng</label>
+                        <input asp-for="PublishedAt" type="datetime-local" class="form-control form-control-sm" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-3">
+                <div class="card-header fw-semibold py-2">
+                    <i class="bi bi-toggles me-1"></i> Tuỳ chọn
+                </div>
+                <div class="card-body d-flex flex-column gap-2">
+                    <div class="form-check form-switch">
+                        <input asp-for="IsPublished" class="form-check-input" role="switch" />
+                        <label asp-for="IsPublished" class="form-check-label">Công khai bài viết</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input asp-for="IsFeatured" class="form-check-input" role="switch" />
+                        <label asp-for="IsFeatured" class="form-check-label">Bài viết nổi bật</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save me-1"></i> Lưu bài viết
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Huỷ</a>
+            </div>
+
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
 }

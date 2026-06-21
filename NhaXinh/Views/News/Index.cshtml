@@ -1,5 +1,188 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model NhaXinh.ViewModels.News.NewsListViewModel
+
 @{
+    ViewData["Title"] = "Tin tức & Gợi ý nội thất";
+    ViewData["CurrentPage"] = Model.CurrentPage;
+    ViewData["TotalPages"] = Model.TotalPages;
+    ViewData["PaginationAction"] = "Index";
+    ViewData["PaginationController"] = "News";
+    ViewData["RouteValues"] = new Dictionary<string, object?>
+            {
+                ["keyword"] = Model.SearchKeyword
+            };
 }
+
+<section class="nx-page-hero">
+    <div class="container">
+        <h1 class="nx-page-hero__title">Tin tức & Gợi ý nội thất</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb nx-breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a asp-controller="Home" asp-action="Index">
+                        <i class="bi bi-house me-1"></i>Trang chủ
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">Tin tức</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<div class="container py-5">
+    <div class="row g-4">
+
+        <div class="col-12 col-lg-8">
+
+            <form asp-controller="News" asp-action="Index" method="get" class="nx-search-bar mb-4">
+                <div class="input-group">
+                    <input type="text" name="keyword" value="@Model.SearchKeyword"
+                           class="form-control nx-search-bar__input"
+                           placeholder="Tìm kiếm bài viết..." />
+                    <button type="submit" class="nx-search-bar__btn">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
+
+            @if (!string.IsNullOrWhiteSpace(Model.SearchKeyword))
+            {
+                <p class="nx-search-result-info mb-3">
+                    Tìm kiếm: <strong>@Model.SearchKeyword</strong>
+                    — tìm thấy <strong>@Model.TotalCount</strong> bài viết
+                    <a asp-controller="News" asp-action="Index" class="nx-clear-search ms-2">
+                        <i class="bi bi-x-circle"></i> Xoá bộ lọc
+                    </a>
+                </p>
+            }
+
+            @if (!Model.NewsList.Any())
+            {
+                <div class="nx-empty-state">
+                    <i class="bi bi-newspaper"></i>
+                    <p>Không tìm thấy bài viết nào.</p>
+                    @if (!string.IsNullOrWhiteSpace(Model.SearchKeyword))
+                    {
+                        <a asp-controller="News" asp-action="Index" class="nx-btn-outline-sm">
+                            Xem tất cả bài viết
+                        </a>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="row g-4">
+                    @foreach (var item in Model.NewsList)
+                    {
+                        <div class="col-12 col-sm-6">
+                            <article class="nx-news-card h-100">
+                                <a asp-controller="News" asp-action="Detail"
+                                   asp-route-slug="@item.Slug" class="nx-news-card__img-link">
+                                    @if (!string.IsNullOrWhiteSpace(item.ThumbnailUrl))
+                                    {
+                                        <img src="@item.ThumbnailUrl" alt="@item.Title"
+                                             class="nx-news-card__img" loading="lazy" />
+                                    }
+                                    else
+                                    {
+                                        <div class="nx-news-card__img-placeholder">
+                                            <i class="bi bi-image"></i>
+                                        </div>
+                                    }
+                                </a>
+                                <div class="nx-news-card__body">
+                                    @if (item.IsFeatured)
+                                    {
+                                        <span class="nx-badge-featured">
+                                            <i class="bi bi-star-fill me-1"></i>Nổi bật
+                                        </span>
+                                    }
+                                    <h2 class="nx-news-card__title">
+                                        <a asp-controller="News" asp-action="Detail"
+                                           asp-route-slug="@item.Slug">@item.Title</a>
+                                    </h2>
+                                    @if (!string.IsNullOrWhiteSpace(item.Summary))
+                                    {
+                                        <p class="nx-news-card__summary">@item.Summary</p>
+                                    }
+                                    <div class="nx-news-card__meta">
+                                        @if (!string.IsNullOrWhiteSpace(item.Author))
+                                        {
+                                            <span><i class="bi bi-person me-1"></i>@item.Author</span>
+                                        }
+                                        @if (item.PublishedAt.HasValue)
+                                        {
+                                            <span>
+                                                <i class="bi bi-calendar3 me-1"></i>
+                                                @item.PublishedAt.Value.ToString("dd/MM/yyyy")
+                                            </span>
+                                        }
+                                    </div>
+                                    <a asp-controller="News" asp-action="Detail"
+                                       asp-route-slug="@item.Slug" class="nx-news-card__read-more">
+                                        Đọc tiếp <i class="bi bi-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                            </article>
+                        </div>
+                    }
+                </div>
+
+                @if (Model.TotalPages > 1)
+                {
+                    <div class="mt-5">
+                        @await Html.PartialAsync("_Pagination")
+                    </div>
+                }
+            }
+        </div>
+
+        <aside class="col-12 col-lg-4">
+            @if (Model.FeaturedNews.Any())
+            {
+                <div class="nx-sidebar-card">
+                    <h3 class="nx-sidebar-card__title">
+                        <i class="bi bi-star-fill me-2"></i>Bài viết nổi bật
+                    </h3>
+                    <div class="nx-featured-list">
+                        @foreach (var f in Model.FeaturedNews)
+                        {
+                            <a asp-controller="News" asp-action="Detail"
+                               asp-route-slug="@f.Slug" class="nx-featured-item">
+                                @if (!string.IsNullOrWhiteSpace(f.ThumbnailUrl))
+                                {
+                                    <img src="@f.ThumbnailUrl" alt="@f.Title"
+                                         class="nx-featured-item__img" loading="lazy" />
+                                }
+                                else
+                                {
+                                    <div class="nx-featured-item__img-placeholder">
+                                        <i class="bi bi-image"></i>
+                                    </div>
+                                }
+                                <div class="nx-featured-item__info">
+                                    <p class="nx-featured-item__title">@f.Title</p>
+                                    @if (f.PublishedAt.HasValue)
+                                    {
+                                        <span class="nx-featured-item__date">
+                                            @f.PublishedAt.Value.ToString("dd/MM/yyyy")
+                                        </span>
+                                    }
+                                </div>
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+
+            <div class="nx-sidebar-cta mt-4">
+                <i class="bi bi-house-heart nx-sidebar-cta__icon"></i>
+                <h4 class="nx-sidebar-cta__title">Khám phá nội thất</h4>
+                <p class="nx-sidebar-cta__text">Hàng trăm sản phẩm chất lượng cao đang chờ bạn.</p>
+                <a asp-controller="Product" asp-action="Index" class="nx-btn-gold w-100 text-center">
+                    <i class="bi bi-grid me-1"></i>Xem sản phẩm
+                </a>
+            </div>
+        </aside>
+
+    </div>
+</div>

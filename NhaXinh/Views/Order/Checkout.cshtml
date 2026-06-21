@@ -1,5 +1,162 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model NhaXinh.ViewModels.Order.CheckoutViewModel
+@using NhaXinh.Models
 @{
+    ViewData["Title"] = "Đặt hàng";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/cart.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/checkout.css" asp-append-version="true" />
+}
+
+<div class="breadcrumb-bar">
+    <div class="container-xl">
+        <ol class="breadcrumb mb-0 py-3" style="font-size:.8rem;">
+            <li class="breadcrumb-item">
+                <a asp-controller="Home" asp-action="Index" class="text-muted text-decoration-none">Trang chủ</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a asp-controller="Cart" asp-action="Index" class="text-muted text-decoration-none">Giỏ hàng</a>
+            </li>
+            <li class="breadcrumb-item active" style="color:var(--clr-accent);">Đặt hàng</li>
+        </ol>
+    </div>
+</div>
+
+<div class="container-xl py-5">
+    <h1 class="section-heading mb-5">Thông tin đặt hàng</h1>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger border-0 rounded-0 mb-4">
+            <i class="bi bi-exclamation-circle me-2"></i>@TempData["Error"]
+        </div>
+    }
+
+    <form asp-action="Checkout" asp-controller="Order" method="post">
+        @Html.AntiForgeryToken()
+        @for (int i = 0; i < Model.CartItems.Count; i++)
+        {
+            <input type="hidden" name="CartItems[@i].ProductId" value="@Model.CartItems[i].ProductId" />
+            <input type="hidden" name="CartItems[@i].ProductName" value="@Model.CartItems[i].ProductName" />
+            <input type="hidden" name="CartItems[@i].ProductImage" value="@Model.CartItems[i].ProductImage" />
+            <input type="hidden" name="CartItems[@i].UnitPrice" value="@Model.CartItems[i].UnitPrice" />
+            <input type="hidden" name="CartItems[@i].Quantity" value="@Model.CartItems[i].Quantity" />
+        }
+        <div class="row g-5">
+
+            <div class="col-12 col-lg-7">
+
+                <div class="checkout-section">
+                    <h5 class="checkout-section__title">
+                        <span class="checkout-step">1</span>
+                        Thông tin nhận hàng
+                    </h5>
+
+                    <div class="mb-3">
+                        <label asp-for="ReceiverName" class="checkout-label"></label>
+                        <input asp-for="ReceiverName" class="checkout-input" placeholder="Nguyễn Văn A" />
+                        <span asp-validation-for="ReceiverName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ReceiverPhone" class="checkout-label"></label>
+                        <input asp-for="ReceiverPhone" class="checkout-input" placeholder="0901 234 567" />
+                        <span asp-validation-for="ReceiverPhone" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ShippingAddress" class="checkout-label"></label>
+                        <textarea asp-for="ShippingAddress" class="checkout-input" rows="3"
+                                  placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố"></textarea>
+                        <span asp-validation-for="ShippingAddress" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-0">
+                        <label asp-for="Note" class="checkout-label"></label>
+                        <textarea asp-for="Note" class="checkout-input" rows="2"
+                                  placeholder="Ghi chú về đơn hàng, ví dụ: giao giờ hành chính..."></textarea>
+                    </div>
+                </div>
+
+                <div class="checkout-section mt-4">
+                    <h5 class="checkout-section__title">
+                        <span class="checkout-step">2</span>
+                        Phương thức thanh toán
+                    </h5>
+
+                    <label class="payment-option @(Model.PaymentMethod == PaymentMethod.COD ? "active" : "")">
+                        <input type="radio" asp-for="PaymentMethod" value="@((int)PaymentMethod.COD)"
+                               class="payment-radio" checked />
+                        <div class="payment-option__icon"><i class="bi bi-cash-coin"></i></div>
+                        <div>
+                            <p class="payment-option__name">Thanh toán khi nhận hàng (COD)</p>
+                            <p class="payment-option__desc">Trả tiền mặt khi nhận được hàng</p>
+                        </div>
+                    </label>
+
+                    <label class="payment-option mt-2 @(Model.PaymentMethod == PaymentMethod.BankTransfer ? "active" : "")">
+                        <input type="radio" asp-for="PaymentMethod" value="@((int)PaymentMethod.BankTransfer)"
+                               class="payment-radio" />
+                        <div class="payment-option__icon"><i class="bi bi-bank"></i></div>
+                        <div>
+                            <p class="payment-option__name">Chuyển khoản ngân hàng</p>
+                            <p class="payment-option__desc">Chuyển khoản qua tài khoản ngân hàng</p>
+                        </div>
+                    </label>
+                </div>
+
+            </div>
+
+            <div class="col-12 col-lg-5">
+                <div class="cart-summary">
+                    <h5 class="cart-summary__title">Đơn hàng của bạn</h5>
+
+                    <div class="checkout-items">
+                        @foreach (var item in Model.CartItems)
+                        {
+                            <div class="checkout-item">
+                                <div class="checkout-item__img-wrap">
+                                    <img src="@(item.ProductImage ?? "/images/defaults/no-image.jpg")"
+                                         alt="@item.ProductName" />
+                                    <span class="checkout-item__qty">@item.Quantity</span>
+                                </div>
+                                <p class="checkout-item__name flex-grow-1">@item.ProductName</p>
+                                <p class="checkout-item__price">@item.SubTotal.ToString("N0") ₫</p>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="cart-summary__row mt-3">
+                        <span>Tạm tính</span>
+                        <span>@Model.TotalAmount.ToString("N0") ₫</span>
+                    </div>
+                    <div class="cart-summary__row">
+                        <span>Phí vận chuyển</span>
+                        <span class="text-success">Miễn phí</span>
+                    </div>
+                    <div class="cart-summary__row cart-summary__row--total">
+                        <span>Tổng cộng</span>
+                        <span>@Model.TotalAmount.ToString("N0") ₫</span>
+                    </div>
+
+                    <button type="submit" class="btn-checkout w-100 text-center mt-4">
+                        Đặt hàng ngay <i class="bi bi-check-lg ms-2"></i>
+                    </button>
+
+                    <div class="cart-summary__secure mt-3 text-center">
+                        <i class="bi bi-shield-lock me-1"></i>
+                        <small class="text-muted">Thông tin của bạn được bảo mật</small>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

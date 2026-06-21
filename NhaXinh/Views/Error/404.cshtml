@@ -1,5 +1,47 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    ViewData["Title"] = "404 - Không tìm thấy trang";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="nx-error-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6 text-center">
+
+                <div class="nx-error-card">
+                    <div class="nx-error-card__illustration">
+                        <div class="nx-error-card__code">404</div>
+                        <div class="nx-error-card__icon">
+                            <i class="bi bi-house-slash"></i>
+                        </div>
+                    </div>
+
+                    <h1 class="nx-error-card__title">Trang không tìm thấy</h1>
+                    <p class="nx-error-card__desc">
+                        Trang bạn đang tìm kiếm có thể đã bị xóa, đổi tên
+                        hoặc tạm thời không có sẵn.
+                    </p>
+
+                    <div class="nx-error-card__actions">
+                        <a asp-controller="Home" asp-action="Index" class="nx-btn-primary">
+                            <i class="bi bi-house me-2"></i>Về trang chủ
+                        </a>
+                        <a asp-controller="Product" asp-action="Index" class="nx-btn-outline">
+                            <i class="bi bi-grid me-2"></i>Xem sản phẩm
+                        </a>
+                    </div>
+
+                    <p class="nx-error-card__hint">
+                        Hoặc thử
+                        <a href="javascript:history.back()">quay lại trang trước</a>
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/error.css" asp-append-version="true" />
 }

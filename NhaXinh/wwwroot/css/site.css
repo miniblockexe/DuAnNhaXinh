@@ -1,22 +1,73 @@
+
+a {
+    color: #b8956a;
+    transition: color 0.22s ease;
+}
+
+    a:hover {
+        color: #9a7a55;
+    }
+
+.btn-primary {
+    background-color: #b8956a;
+    border-color: #b8956a;
+    color: #fff;
+}
+
+    .btn-primary:hover,
+    .btn-primary:focus {
+        background-color: #9a7a55;
+        border-color: #9a7a55;
+        color: #fff;
+    }
+
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+    background-color: #b8956a;
+    border-color: #b8956a;
+    color: #fff;
+}
+
+.border-top {
+    border-top: 1px solid #e8e2d9 !important;
+}
+
+.border-bottom {
+    border-bottom: 1px solid #e8e2d9 !important;
+}
+
+.box-shadow {
+    box-shadow: 0 .25rem .75rem rgba(0,0,0,.05);
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1ede8;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c9b89e;
+    border-radius: 3px;
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #b8956a;
+    }
+
+::selection {
+    background: rgba(184,149,106,.25);
+    color: inherit;
+}
+
+:focus-visible {
+    outline: 2px solid #b8956a;
+    outline-offset: 2px;
+}
+
 html {
-  font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
-body {
-  margin-bottom: 60px;
+    scroll-behavior: smooth;
 }

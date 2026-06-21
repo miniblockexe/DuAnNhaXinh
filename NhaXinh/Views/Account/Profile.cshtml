@@ -1,5 +1,205 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model NhaXinh.ViewModels.Account.ProfileViewModel
+
 @{
+    ViewData["Title"] = "Hồ sơ cá nhân";
+    string avatarSrc = !string.IsNullOrEmpty(Model.AvatarUrl)
+        ? Model.AvatarUrl
+        : "/images/defaults/avatar.png";
+}
+
+<div class="nx-profile-hero">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb nx-breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a asp-controller="Home" asp-action="Index">
+                        <i class="bi bi-house me-1"></i>Trang chủ
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">Hồ sơ cá nhân</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="nx-profile-section">
+    <div class="container">
+        <div class="row g-4 align-items-start">
+
+            <div class="col-12 col-lg-4 col-xl-3">
+                <div class="nx-profile-sidebar">
+
+                    <div class="nx-avatar-block">
+                        <div class="nx-avatar-ring">
+                            <img src="@avatarSrc" alt="@Model.FullName"
+                                 class="nx-avatar-img" id="avatarPreview" />
+                            <label for="AvatarFile" class="nx-avatar-cam" title="Đổi ảnh đại diện">
+                                <i class="bi bi-camera-fill"></i>
+                            </label>
+                        </div>
+                        <h2 class="nx-sidebar-name">@Model.FullName</h2>
+                        <p class="nx-sidebar-email">
+                            <i class="bi bi-envelope-fill me-1"></i>@Model.Email
+                        </p>
+                        <div class="nx-sidebar-badge">
+                            <i class="bi bi-patch-check-fill me-1"></i>
+                            Thành viên từ @Model.CreatedAt.ToString("MM/yyyy")
+                        </div>
+                    </div>
+
+                    <nav class="nx-sidebar-menu">
+                        <a class="nx-sidebar-menu__item nx-sidebar-menu__item--active"
+                           asp-controller="Account" asp-action="Profile">
+                            <span class="nx-sidebar-menu__icon">
+                                <i class="bi bi-person-fill"></i>
+                            </span>
+                            <span>Thông tin cá nhân</span>
+                        </a>
+                        <a class="nx-sidebar-menu__item"
+                           asp-controller="Order" asp-action="History">
+                            <span class="nx-sidebar-menu__icon">
+                                <i class="bi bi-bag-check-fill"></i>
+                            </span>
+                            <span>Lịch sử đơn hàng</span>
+                        </a>
+                        <form asp-controller="Account" asp-action="Logout"
+                              method="post" class="w-100">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="nx-sidebar-menu__item nx-sidebar-menu__item--logout w-100">
+                                <span class="nx-sidebar-menu__icon">
+                                    <i class="bi bi-box-arrow-right"></i>
+                                </span>
+                                <span>Đăng xuất</span>
+                            </button>
+                        </form>
+                    </nav>
+
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-8 col-xl-9">
+                <div class="nx-profile-card">
+
+                    <div class="nx-profile-card__head">
+                        <div class="nx-profile-card__head-left">
+                            <div class="nx-profile-card__head-icon">
+                                <i class="bi bi-person-gear"></i>
+                            </div>
+                            <div>
+                                <h3 class="nx-profile-card__title">Chỉnh sửa thông tin</h3>
+                                <p class="nx-profile-card__subtitle">Cập nhật thông tin cá nhân của bạn</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nx-profile-card__body">
+                        <form asp-action="Profile" asp-controller="Account"
+                              method="post" enctype="multipart/form-data" novalidate>
+                            @Html.AntiForgeryToken()
+
+                            <input type="file" asp-for="AvatarFile" id="AvatarFile"
+                                   class="d-none" accept="image/*"
+                                   onchange="previewAvatar(this)" />
+
+                            <div class="nx-form-section">
+                                <div class="nx-form-section__label">
+                                    <i class="bi bi-person-lines-fill me-2"></i>Thông tin cơ bản
+                                </div>
+
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <div class="nx-field">
+                                            <label asp-for="FullName" class="nx-field__label">
+                                                Họ và tên <span class="nx-required">*</span>
+                                            </label>
+                                            <div class="nx-field__input-wrap">
+                                                <span class="nx-field__prefix">
+                                                    <i class="bi bi-person"></i>
+                                                </span>
+                                                <input asp-for="FullName" class="nx-field__input"
+                                                       placeholder="Nguyễn Văn A" />
+                                            </div>
+                                            <span asp-validation-for="FullName" class="nx-field__error"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                        <div class="nx-field">
+                                            <label class="nx-field__label">
+                                                Email
+                                                <span class="nx-field__readonly-badge">
+                                                    <i class="bi bi-lock-fill me-1"></i>Không thể thay đổi
+                                                </span>
+                                            </label>
+                                            <div class="nx-field__input-wrap">
+                                                <span class="nx-field__prefix">
+                                                    <i class="bi bi-envelope"></i>
+                                                </span>
+                                                <input type="text" class="nx-field__input nx-field__input--locked"
+                                                       value="@Model.Email" readonly />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                        <div class="nx-field">
+                                            <label asp-for="PhoneNumber" class="nx-field__label">
+                                                Số điện thoại
+                                            </label>
+                                            <div class="nx-field__input-wrap">
+                                                <span class="nx-field__prefix">
+                                                    <i class="bi bi-telephone"></i>
+                                                </span>
+                                                <input asp-for="PhoneNumber" class="nx-field__input"
+                                                       placeholder="0912 345 678" type="tel" />
+                                            </div>
+                                            <span asp-validation-for="PhoneNumber" class="nx-field__error"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="nx-form-section">
+                                <div class="nx-form-section__label">
+                                    <i class="bi bi-geo-alt-fill me-2"></i>Địa chỉ giao hàng
+                                </div>
+
+                                <div class="nx-field">
+                                    <label asp-for="Address" class="nx-field__label">
+                                        Địa chỉ
+                                    </label>
+                                    <div class="nx-field__input-wrap nx-field__input-wrap--textarea">
+                                        <span class="nx-field__prefix nx-field__prefix--top">
+                                            <i class="bi bi-geo-alt"></i>
+                                        </span>
+                                        <textarea asp-for="Address" class="nx-field__input nx-field__input--textarea"
+                                                  placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố"
+                                                  rows="3"></textarea>
+                                    </div>
+                                    <span asp-validation-for="Address" class="nx-field__error"></span>
+                                </div>
+                            </div>
+
+                            <div class="nx-profile-card__actions">
+                                <button type="submit" class="nx-btn-save">
+                                    <i class="bi bi-check2-circle me-2"></i>Lưu thay đổi
+                                </button>
+                                <a asp-controller="Home" asp-action="Index" class="nx-btn-cancel">
+                                    Huỷ bỏ
+                                </a>
+                            </div>
+
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
 }

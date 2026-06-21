@@ -1,5 +1,260 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model NhaXinh.ViewModels.Product.ProductDetailViewModel
+
 @{
+    ViewData["Title"] = Model.Product.Name;
+    var product = Model.Product;
+    bool hasDiscount = product.DiscountPrice.HasValue && product.DiscountPrice < product.Price;
+    decimal displayPrice = hasDiscount ? product.DiscountPrice!.Value : product.Price;
+    int discountPct = hasDiscount
+        ? (int)(((product.Price - displayPrice) / product.Price) * 100)
+        : 0;
+
+    string mainImg = !string.IsNullOrEmpty(product.MainImageUrl)
+        ? product.MainImageUrl
+        : "/images/defaults/no-image.png";
+
+    var galleryImages = product.ProductImages?
+        .OrderBy(i => i.DisplayOrder)
+        .Select(i => i.ImageUrl)
+        .ToList() ?? new List<string>();
+
+    if (!galleryImages.Contains(mainImg))
+        galleryImages.Insert(0, mainImg);
 }
+
+<section class="nx-detail-section">
+    <div class="container">
+
+        <nav aria-label="breadcrumb" class="pt-4 mb-4">
+            <ol class="breadcrumb nx-breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                <li class="breadcrumb-item">
+                    <a asp-controller="Product" asp-action="Index"
+                       asp-route-categoryId="@product.CategoryId">
+                        @(product.Category?.Name ?? "Sản phẩm")
+                    </a>
+                </li>
+                <li class="breadcrumb-item active">@product.Name</li>
+            </ol>
+        </nav>
+
+        <div class="row g-5 mb-5">
+
+            <div class="col-12 col-lg-6">
+                <div class="nx-gallery">
+                    <div class="nx-gallery__main">
+                        <img src="@mainImg" alt="@product.Name"
+                             class="nx-gallery__main-img" id="mainImg"
+                             onerror="this.src='/images/defaults/no-image.png'" />
+                        @if (hasDiscount)
+                        {
+                            <span class="nx-gallery__badge-sale">-@discountPct%</span>
+                        }
+                        @if (product.IsFeatured)
+                        {
+                            <span class="nx-gallery__badge-featured">Nổi bật</span>
+                        }
+                    </div>
+
+                    @if (galleryImages.Count > 1)
+                    {
+                        <div class="nx-gallery__thumbs">
+                            @foreach (var img in galleryImages)
+                            {
+                                <button type="button" class="nx-gallery__thumb @(img == mainImg ? "active" : "")"
+                                        onclick="switchImage(this, '@img')">
+                                    <img src="@img" alt="@product.Name"
+                                         onerror="this.src='/images/defaults/no-image.png'" />
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-6">
+                <div class="nx-detail-info">
+
+                    @if (product.Category != null)
+                    {
+                        <a asp-controller="Product" asp-action="Index"
+                           asp-route-categoryId="@product.CategoryId"
+                           class="nx-detail-info__cat">@product.Category.Name</a>
+                    }
+
+                    <h1 class="nx-detail-info__name">@product.Name</h1>
+
+                    @if (!string.IsNullOrEmpty(product.ShortDescription))
+                    {
+                        <p class="nx-detail-info__short-desc">@product.ShortDescription</p>
+                    }
+
+                    @* Price *@
+                    <div class="nx-detail-info__price-block">
+                        <span class="nx-detail-info__price">@displayPrice.ToString("N0") ₫</span>
+                        @if (hasDiscount)
+                        {
+                            <span class="nx-detail-info__price-orig">@product.Price.ToString("N0") ₫</span>
+                            <span class="nx-detail-info__price-save">
+                                Tiết kiệm @((product.Price - displayPrice).ToString("N0")) ₫
+                            </span>
+                        }
+                    </div>
+
+                    <div class="nx-detail-info__stock mb-4">
+                        @if (product.StockQuantity > 0)
+                        {
+                            <span class="nx-stock-in">
+                                <i class="bi bi-check-circle-fill me-1"></i>Còn hàng
+                                <span class="nx-stock-qty">(@product.StockQuantity sản phẩm)</span>
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="nx-stock-out">
+                                <i class="bi bi-x-circle-fill me-1"></i>Hết hàng
+                            </span>
+                        }
+                    </div>
+
+                    @if (product.StockQuantity > 0)
+                    {
+                        <form asp-controller="Cart" asp-action="AddToCart"
+                              method="post" class="nx-add-to-cart-form"
+                              data-cart-add>
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="productId" value="@product.Id" />
+
+                            <div class="nx-qty-wrap mb-4">
+
+                                <button type="button" class="nx-qty-btn" onclick="changeQty(-1)">
+                                    <i class="bi bi-dash"></i>
+                                </button>
+                                <input type="number" name="quantity" id="qtyInput"
+                                       class="nx-qty-input" value="1" min="1"
+                                       max="@product.StockQuantity" />
+                                <button type="button" class="nx-qty-btn" onclick="changeQty(1)">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            </div>
+
+                            <div class="d-flex gap-3 flex-wrap">
+                                <button type="submit" class="nx-btn-add-cart flex-fill">
+                                    <i class="bi bi-bag-plus me-2"></i>Thêm vào giỏ
+                                </button>
+                                <button type="submit" name="buyNow" value="true"
+                                        class="nx-btn-buy-now flex-fill">
+                                    Mua ngay
+                                </button>
+                            </div>
+                        </form>
+                    }
+                    else
+                    {
+                        <button class="nx-btn-add-cart w-100 opacity-50" disabled>
+                            <i class="bi bi-bag-x me-2"></i>Hết hàng
+                        </button>
+                    }
+
+                    <div class="nx-detail-info__meta mt-4">
+                        <div class="nx-meta-row">
+                            <span class="nx-meta-label"><i class="bi bi-tag me-1"></i>Danh mục:</span>
+                            <span class="nx-meta-val">@(product.Category?.Name ?? "–")</span>
+                        </div>
+                        <div class="nx-meta-row">
+                            <span class="nx-meta-label"><i class="bi bi-eye me-1"></i>Lượt xem:</span>
+                            <span class="nx-meta-val">@product.ViewCount.ToString("N0")</span>
+                        </div>
+                    </div>
+
+                    <div class="nx-guarantees mt-4">
+                        <div class="nx-guarantee-item">
+                            <i class="bi bi-shield-check"></i>
+                            <span>Bảo hành chính hãng 12 tháng</span>
+                        </div>
+                        <div class="nx-guarantee-item">
+                            <i class="bi bi-truck"></i>
+                            <span>Miễn phí vận chuyển nội thành</span>
+                        </div>
+                        <div class="nx-guarantee-item">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                            <span>Đổi trả trong 30 ngày</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(product.Description))
+        {
+            <div class="nx-detail-tabs mb-5">
+                <ul class="nx-tabs-nav nav" id="detailTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nx-tab-btn active" id="desc-tab"
+                                data-bs-toggle="tab" data-bs-target="#descPane"
+                                type="button" role="tab">
+                            <i class="bi bi-file-text me-2"></i>Mô tả sản phẩm
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nx-tab-btn" id="ship-tab"
+                                data-bs-toggle="tab" data-bs-target="#shipPane"
+                                type="button" role="tab">
+                            <i class="bi bi-truck me-2"></i>Vận chuyển & Bảo hành
+                        </button>
+                    </li>
+                </ul>
+                <div class="nx-tabs-content tab-content">
+                    <div class="tab-pane fade show active" id="descPane" role="tabpanel">
+                        <div class="nx-detail-desc">
+                            @Html.Raw(product.Description)
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="shipPane" role="tabpanel">
+                        <div class="nx-detail-desc">
+                            <h4>Chính sách vận chuyển</h4>
+                            <ul>
+                                <li>Miễn phí giao hàng nội thành cho đơn từ 2.000.000 ₫</li>
+                                <li>Phí vận chuyển ngoại tỉnh: tính theo khoảng cách & khối lượng</li>
+                                <li>Thời gian giao hàng: 2–5 ngày làm việc</li>
+                            </ul>
+                            <h4>Chính sách bảo hành</h4>
+                            <ul>
+                                <li>Bảo hành 12 tháng cho lỗi nhà sản xuất</li>
+                                <li>Đổi trả trong 30 ngày nếu sản phẩm bị lỗi</li>
+                                <li>Liên hệ hotline để được hỗ trợ nhanh nhất</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (Model.RelatedProducts.Any())
+        {
+            <div class="nx-related mb-5">
+                <div class="nx-section-header d-flex align-items-end justify-content-between mb-4 flex-wrap gap-2">
+                    <div>
+                        <h2 class="nx-section-title mb-1">Sản phẩm liên quan</h2>
+                        <p class="nx-section-sub mb-0">Có thể bạn cũng thích</p>
+                    </div>
+                    <a asp-controller="Product" asp-action="Index"
+                       asp-route-categoryId="@product.CategoryId"
+                       class="nx-link-see-all">
+                        Xem thêm <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                <div class="row g-4">
+                    @foreach (var rel in Model.RelatedProducts)
+                    {
+                        <div class="col-12 col-sm-6 col-md-3">
+                            @await Html.PartialAsync("_ProductCard", rel)
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+    </div>
+</section>
+

@@ -1,13 +1,96 @@
-﻿<!DOCTYPE html>
+﻿@{
+    int currentPage = ViewData["CurrentPage"] as int? ?? 1;
+    int totalPages = ViewData["TotalPages"] as int? ?? 1;
 
-<html>
-<head>
-    <meta name="viewport" content="width=device-width" />
-    <title>@ViewBag.Title</title>
-</head>
-<body>
-    <div>
-        @RenderBody()
-    </div>
-</body>
-</html>
+    if (totalPages <= 1) { return; }
+
+    string action = ViewData["PaginationAction"] as string
+                        ?? ViewContext.RouteData.Values["action"]?.ToString()
+                        ?? "Index";
+    string controller = ViewData["PaginationController"] as string
+                        ?? ViewContext.RouteData.Values["controller"]?.ToString()
+                        ?? "Home";
+
+    var extra = ViewData["RouteValues"] as Dictionary<string, object?> ?? new();
+
+    int window = 2;
+    int start = Math.Max(1, currentPage - window);
+    int end = Math.Min(totalPages, currentPage + window);
+
+    IDictionary<string, string> BuildRoute(int page)
+    {
+        var rv = new RouteValueDictionary(extra) { ["page"] = page };
+
+        return rv.ToDictionary(
+            k => k.Key,
+            v => v.Value?.ToString() ?? string.Empty
+        );
+    }
+}
+
+<nav class="nx-pagination" aria-label="Phân trang">
+    <ul class="pagination justify-content-center flex-wrap gap-1 mb-0">
+
+        <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
+            <a class="page-link nx-pagination__btn"
+               asp-controller="@controller" asp-action="@action"
+               asp-all-route-data="@BuildRoute(currentPage - 1)"
+               aria-label="Trang trước">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+        </li>
+
+        @if (start > 1)
+        {
+            <li class="page-item">
+                <a class="page-link nx-pagination__btn"
+                   asp-controller="@controller" asp-action="@action"
+                   asp-all-route-data="@BuildRoute(1)">1</a>
+            </li>
+            @if (start > 2)
+            {
+                <li class="page-item disabled">
+                    <span class="page-link nx-pagination__ellipsis">&hellip;</span>
+                </li>
+            }
+        }
+
+        @for (int p = start; p <= end; p++)
+        {
+            <li class="page-item @(p == currentPage ? "active" : "")">
+                <a class="page-link nx-pagination__btn"
+                   asp-controller="@controller" asp-action="@action"
+                   asp-all-route-data="@BuildRoute(p)"
+                   aria-current="@(p == currentPage ? "page" : null)">@p</a>
+            </li>
+        }
+
+        @if (end < totalPages)
+        {
+            @if (end < totalPages - 1)
+            {
+                <li class="page-item disabled">
+                    <span class="page-link nx-pagination__ellipsis">&hellip;</span>
+                </li>
+            }
+            <li class="page-item">
+                <a class="page-link nx-pagination__btn"
+                   asp-controller="@controller" asp-action="@action"
+                   asp-all-route-data="@BuildRoute(totalPages)">@totalPages</a>
+            </li>
+        }
+
+        <li class="page-item @(currentPage >= totalPages ? "disabled" : "")">
+            <a class="page-link nx-pagination__btn"
+               asp-controller="@controller" asp-action="@action"
+               asp-all-route-data="@BuildRoute(currentPage + 1)"
+               aria-label="Trang tiếp">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        </li>
+    </ul>
+
+    <p class="nx-pagination__summary text-center mt-2 mb-0">
+        Trang <strong>@currentPage</strong> / <strong>@totalPages</strong>
+    </p>
+</nav>

@@ -1,13 +1,26 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var success = TempData["SuccessMessage"] as string ?? TempData["Success"] as string;
+    var error = TempData["ErrorMessage"] as string ?? TempData["Error"] as string;
+}
 
-<html>
-<head>
-    <meta name="viewport" content="width=device-width" />
-    <title>@ViewBag.Title</title>
-</head>
-<body>
-    <div>
-        @RenderBody()
+@if (!string.IsNullOrEmpty(success) || !string.IsNullOrEmpty(error))
+{
+    <div class="nx-notification-wrap container" aria-live="polite">
+        @if (!string.IsNullOrEmpty(success))
+        {
+            <div class="nx-notification nx-notification--success alert alert-dismissible d-flex align-items-center gap-3" role="alert">
+                <i class="bi bi-check-circle-fill fs-5"></i>
+                <span>@success</span>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Đóng"></button>
+            </div>
+        }
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <div class="nx-notification nx-notification--error alert alert-dismissible d-flex align-items-center gap-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                <span>@error</span>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Đóng"></button>
+            </div>
+        }
     </div>
-</body>
-</html>
+}

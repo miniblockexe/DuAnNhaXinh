@@ -10,7 +10,6 @@ namespace NhaXinh.Models
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        // Navigation
         public ICollection<Order> Orders { get; set; } = new List<Order>();
     }
 }
