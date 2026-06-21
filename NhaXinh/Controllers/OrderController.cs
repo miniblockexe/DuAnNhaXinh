@@ -159,6 +159,8 @@ namespace NhaXinh.Controllers
                 PaymentMethod.BankTransfer => "Chuyển khoản ngân hàng",
                 _ => vm.PaymentMethod.ToString()
             };
+            var createdOrder = await _orderService.GetByCodeAsync(orderCode!);
+            var newOrderId = createdOrder?.Id ?? 0;
 
             _ = Task.Run(async () =>
             {
@@ -177,7 +179,8 @@ namespace NhaXinh.Controllers
                 await _emailService.SendNewOrderNotificationAsync(
                     orderCode: orderCode!,
                     customerName: customerName,
-                    totalAmount: vm.TotalAmount);
+                    totalAmount: vm.TotalAmount,
+                    orderId: newOrderId);
             });
 
             return RedirectToAction(nameof(Success), new { orderCode });

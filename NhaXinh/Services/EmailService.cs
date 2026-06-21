@@ -127,9 +127,13 @@ namespace NhaXinh.Services
             {
                 var body = await LoadTemplateAsync("NewOrderNotification.html");
 
-                var adminOrderUrl = string.IsNullOrEmpty(_settings.BaseUrl) || orderId == 0
-                    ? "/Admin/Order"
-                    : $"{_settings.BaseUrl.TrimEnd('/')}/Admin/Order/Detail/{orderId}";
+                var path = orderId == 0
+                   ? "/Admin/Order"
+                   : $"/Admin/Order/Detail/{orderId}";
+
+                var adminOrderUrl = string.IsNullOrEmpty(_settings.BaseUrl)
+                    ? path
+                    : $"{_settings.BaseUrl.TrimEnd('/')}{path}";
 
                 body = body
                     .Replace("{{OrderCode}}", orderCode)
