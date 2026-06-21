@@ -112,6 +112,13 @@ namespace NhaXinh.Services
             };
         }
 
+        public async Task<List<Order>> GetRecentPendingOrdersAsync(int limit = 36)
+        {
+            var (items, _, _) = await GetPagedOrdersAsync(
+                page: 1, pageSize: limit, status: OrderStatus.Pending);
+            return items;
+        }
+
 
         private static Order BuildOrder(
             string userId, string receiverName, string receiverPhone,

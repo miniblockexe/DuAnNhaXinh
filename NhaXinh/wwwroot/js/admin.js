@@ -145,6 +145,53 @@
 
 })();
 
+(function initNotifications() {
+    const badge = document.getElementById('notifBadge');
+    const list = document.getElementById('notifList');
+    const toggleBtn = document.getElementById('notifToggleBtn');
+    if (!badge || !list) return;
+
+    async function fetchNotifications() {
+        try {
+            const res = await fetch('/Admin/Dashboard/GetNotifications');
+            const data = await res.json();
+
+            if (data.count > 0) {
+                badge.textContent = data.count > 99 ? '99+' : data.count;
+                badge.classList.remove('d-none');
+            } else {
+                badge.classList.add('d-none');
+            }
+
+            if (data.orders && data.orders.length > 0) {
+                list.innerHTML = data.orders.map(function (o) {
+                    return `<li class="border-bottom">
+                            <a href="/Admin/Order/Detail/${o.id}"
+                               class="dropdown-item py-2 px-3 text-decoration-none">
+                                <div class="d-flex justify-content-between">
+                                    <span class="fw-semibold text-warning small">${o.orderCode}</span>
+                                    <span class="text-muted" style="font-size:.75rem">${o.createdAt}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mt-1">
+                                    <span class="small text-dark">${o.customerName}</span>
+                                    <span class="small text-success fw-semibold">${o.total}</span>
+                                </div>
+                            </a>
+                        </li>`;
+                }).join('');
+            } else {
+                list.innerHTML = '<li class="text-muted text-center small py-3">Không có đơn hàng mới</li>';
+            }
+        } catch (e) {
+            list.innerHTML = '<li class="text-danger text-center small py-3">Lỗi tải thông báo</li>';
+        }
+    }
+
+    fetchNotifications();
+    setInterval(fetchNotifications, 60_000);
+    if (toggleBtn) toggleBtn.addEventListener('click', fetchNotifications);
+})();
+
 function previewImg(input, previewId, placeholderId) {
     var preview = document.getElementById(previewId);
     if (!preview || !input.files || !input.files[0]) return;
